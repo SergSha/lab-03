@@ -1,5 +1,4 @@
 ## lab-03
-iSCSI, GFS2
 otus | iSCSI, multipath and cluster file systems: GFS2
 
 ### Домашнее задание
