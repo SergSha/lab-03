@@ -1,0 +1,6 @@
+---
+- name: "restart pcsd"
+  ansible.builtin.systemd:
+    name: pcsd.service
+    state: restarted
+...
