@@ -1,0 +1,18 @@
+---
+# systemctl enable nftables --now
+- name: Start NFTables Service
+  ansible.builtin.systemd:
+    name: nftables
+    state: started
+    enabled: yes
+
+# targetcli saveconfig
+- name: targetcli saveconfig
+  ansible.builtin.command: targetcli saveconfig
+
+# systemctl enable nginx --now
+- name: Start Nginx Service
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: yes

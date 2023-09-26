@@ -1,0 +1,6 @@
+---
+#- name: Include nftables service
+#  include_tasks: nftables.yml
+
+- name: Include nginx service
+  include_tasks: pcs.yml

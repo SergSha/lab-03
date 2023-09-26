@@ -1,0 +1,6 @@
+---
+#- name: Include nftables service
+#  include_tasks: nftables.yml
+
+- name: Include iscsi service
+  include_tasks: iscsi.yml

@@ -82,9 +82,15 @@ variable "allow_stopping_for_update" {
 #  type        = string
 #}
 
+#variable "image_id" {
+#  description = "Default image ID Debian 11"
+#  default     = "fd83u9thmahrv9lgedrk" # debian-11-v20230814
+#  type        = string
+#}
+
 variable "image_id" {
   description = "Default image ID Debian 11"
-  default     = "fd83u9thmahrv9lgedrk" # debian-11-v20230814
+  default     = "fd8cvn7c0lb5ub3ip3kn" # almalinux-9-v20230911
   type        = string
 }
 

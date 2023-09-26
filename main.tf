@@ -1,20 +1,18 @@
 locals {
-  vm_user         = "debian"
+  vm_user         = "cloud-user"
   ssh_public_key  = "~/.ssh/otus.pub"
   ssh_private_key = "~/.ssh/otus"
-
   #vm_name = "instance"
   vpc_name = "my_vpc_network"
   subnet_cidrs = ["10.10.20.0/24"]
   subnet_name = "my_vpc_subnet"
-  
   disks = {
-    "var" = {
+    "data" = {
       "size"        = "1"
     },
-    "data" = {
-      "size"        = "2"
-    }
+    #"var" = {
+    #  "size"        = "1"
+    #}
   }
 }
 
@@ -49,7 +47,7 @@ module "iscsi-servers" {
       #"auto_delete" = true
       #"mode"        = "READ_WRITE"
     }
-    if disk.name == "var" || disk.name == "data"
+    if disk.name == "data" #|| disk.name == "var"
   }
   depends_on = [ yandex_compute_disk.disks ]
 }
@@ -62,7 +60,7 @@ data "yandex_compute_instance" "iscsi-servers" {
 
 module "pcs-servers" {
   source = "./modules/instances"
-  count = 3
+  count = 1
   vm_name = "pcs-${format("%02d", count.index + 1)}"
   vpc_name = local.vpc_name
   subnet_cidrs = yandex_vpc_subnet.subnet.v4_cidr_blocks
