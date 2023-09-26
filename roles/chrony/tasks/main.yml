@@ -1,0 +1,51 @@
+---
+- name: Debian OS
+  block:
+
+  # apt install chrony -y
+  - name: Installing Chrony Debian
+    ansible.builtin.apt:
+      name:
+        - chrony
+      state: present
+      update_cache: yes
+
+  # systemctl enable chrony --now
+  - name: Start Chrony Service Debian
+    ansible.builtin.systemd:
+      name: chrony
+      state: started
+      enabled: yes
+
+  # timedatectl set-timezone Europe/Moscow
+  - name: Set timezone to Europe/Moscow
+    community.general.timezone:
+      name: Europe/Moscow
+    notify: Restart Chrony Debian
+
+  when: ansible_os_family == "Debian"
+
+- name: Redhat OS
+  block:
+
+  # dnf install chrony -y
+  - name: Installing Chrony RedHat
+    ansible.builtin.dnf:
+      name:
+        - chrony
+      state: present
+
+  # systemctl enable chronyd --now
+  - name: Start Chronyd Service RedHat
+    ansible.builtin.systemd:
+      name: chronyd
+      state: started
+      enabled: yes
+
+  # timedatectl set-timezone Europe/Moscow
+  - name: Set timezone to Europe/Moscow
+    community.general.timezone:
+      name: Europe/Moscow
+    notify: Restart Chronyd RedHat
+
+  when: ansible_os_family == "RedHat"

@@ -1,0 +1,7 @@
+---
+# sysctl -w net.ipv4.ip_forward=1 && sysctl -p
+- name: Set ip forwarding on in /proc and verify token value with the sysctl command
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: true

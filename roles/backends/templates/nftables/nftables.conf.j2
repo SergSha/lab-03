@@ -1,0 +1,33 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table ip filter {
+
+        chain NGINX_INP {
+                tcp dport 80 ct state new counter accept
+        }
+        chain PHP_FPM_INP {
+                tcp dport 9000 ct state new counter accept
+        }
+        chain INPUT {
+                type filter hook input priority filter; policy drop;
+                ct state invalid counter drop
+                iifname "lo" counter accept
+                tcp dport 22 ct state new counter accept
+                udp dport 323 counter accept
+                ip saddr 0.0.0.0/0 icmp type echo-request counter accept
+                ct state established,related counter accept
+                counter jump NGINX_INP
+                #counter jump PHP_FPM_INP
+        }
+
+        chain FORWARD {
+                type filter hook forward priority filter; policy drop;
+        }
+
+        chain OUTPUT {
+                type filter hook output priority filter; policy drop;
+                ct state established,related,new counter accept
+        }
+}

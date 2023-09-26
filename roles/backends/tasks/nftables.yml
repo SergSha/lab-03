@@ -1,0 +1,45 @@
+---
+- name: Debian OS
+  block:
+
+  # apt install nftables -y
+  - name: Install nftables Debian
+    ansible.builtin.apt:
+      name: nftables
+      state: present
+
+  # cp ./nftables/nftables.conf.j2 /etc/nftables.conf
+  - name: Copy nftables.conf Debian
+    ansible.builtin.template:
+      src: nftables/nftables.conf.j2
+      dest: /etc/nftables.conf
+      owner: root
+      mode: 0600
+
+  when: ansible_os_family == "Debian"
+
+- name: RedHat OS
+  block:
+
+  # dnf install nftables -y
+  - name: Install nftables RedHat
+    ansible.builtin.dnf:
+      name: nftables
+      state: present
+
+  # cp ./nftables/nftables.conf.j2 /etc/sysconfig/nftables.conf
+  - name: Copy nftables.conf RedHat
+    ansible.builtin.template:
+      src: nftables/nftables.conf.j2
+      dest: /etc/sysconfig/nftables.conf
+      owner: root
+      mode: 0600
+
+  when: ansible_os_family == "RedHat"
+
+# systemctl restart nftables --now
+- name: Restart NFTables
+  ansible.builtin.service:
+    name: nftables
+    state: restarted
+    enabled: yes

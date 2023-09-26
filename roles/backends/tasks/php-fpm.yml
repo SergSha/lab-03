@@ -1,0 +1,92 @@
+---
+
+# tasks file for php
+
+# - name: Install EPEL repo
+#   ansible.builtin.yum:
+#     name:
+#       - epel-release
+#     state: latest
+
+# #- name: Instal EPEL repo
+# #  command: rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+# #  ignore_errors: yes
+
+# - name: Install remi repo
+#   ansible.builtin.yum:
+#     name:
+#       - http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+#     state: latest
+
+# #- name: Install Remi repo
+# #  command: rpm -Uvh http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+# #  ignore_errors: yes
+
+# - name: Enable remi-php82 repo
+#   ansible.builtin.replace:
+#     path: /etc/yum.repos.d/remi-php82.repo
+#     regexp: '^enabled=0'
+#     replace: enabled=1
+
+# - name: Install php php-fpm php-gd php-mysql
+#   ansible.builtin.yum:
+#     name:
+#       - php
+#       - php-fpm
+#       - php-gd
+#       - php-mysql
+#     state: present
+
+# apt install php-fpm -y
+- name: Install PHP-FPM Debian
+  ansible.builtin.apt:
+    name:
+      - "php{{ php_version }}-fpm"
+      - "php{{ php_version }}-mysql"
+      - "php{{ php_version }}-bcmath"
+      - "php{{ php_version }}-ctype"
+      - "php{{ php_version }}-json"
+      - "php{{ php_version }}-mbstring"
+      - "php{{ php_version }}-pdo"
+      - "php{{ php_version }}-tokenizer"
+      - "php{{ php_version }}-xml"
+      - "php{{ php_version }}-curl"
+    state: latest
+    update_cache: yes
+
+## sed -i "s/listen = \/run\/php\/php7.4-fpm.sock/listen = 127.0.0.1:9000/" /etc/php/*/fpm/pool.d/www.conf
+## sed -i "s/listen.allowed_clients = /listen.allowed_clients = {{ ip_address['fw'] }}/" /etc/php-fpm.d/www.conf
+#- name: Correct www.conf
+#  ansible.builtin.lineinfile:
+#    path: "/etc/php/{{ php_version }}/fpm/pool.d/www.conf"
+#    regexp: "{{ item.regexp }}"
+#    line: "{{ item.line }}"
+#  loop:
+#    - { regexp: "^listen = ", line: "listen = {{ ansible_default_ipv4.address }}:9000" }
+#    - { regexp: "^listen.allowed_clients = ", line: "listen.allowed_clients = {{ ip_address['loadbalancer-1'] }}" }
+
+# mkdir -p /var/www/html/
+- name: Create html directory
+  ansible.builtin.file:
+    path: /var/www/html
+    state: directory
+    mode: '0755'
+
+# cp html/index.php.j2 /var/www/html/index.php
+- name: Template php files
+  ansible.builtin.template:
+    src: "html/{{ item }}.j2"
+    dest: "/var/www/html/{{ item }}"
+  loop:
+    - index.php
+    - add.php
+    - update.php
+    - delete.php
+    - phpinfo.php
+
+# systemctl restart php-fpm.service
+- name: Start php-fpm service
+  ansible.builtin.service:
+    name: php{{ php_version }}-fpm
+    state: restarted
+    enabled: yes

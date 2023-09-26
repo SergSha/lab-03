@@ -1,0 +1,28 @@
+---
+# systemctl restart chrony
+- name: Restart Chrony Debian
+  ansible.builtin.service:
+    name: chrony
+    state: restarted
+    daemon_reload: yes
+
+# systemctl restart chronyd
+- name: Restart Chronyd RedHat
+  ansible.builtin.service:
+    name: chronyd
+    state: restarted
+    daemon_reload: yes
+
+# systemctl enable nftables --now
+- name: Start NFTables Service
+  ansible.builtin.systemd:
+    name: nftables
+    state: started
+    enabled: yes
+
+# systemctl enable nginx --now
+- name: Start Nginx Service
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: yes

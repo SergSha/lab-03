@@ -1,0 +1,22 @@
+DROP TABLE IF EXISTS `new`;
+CREATE TABLE `new` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) DEFAULT NULL,
+  `year` year(4) DEFAULT NULL,
+  `price` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `used`;
+CREATE TABLE `used` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) DEFAULT NULL,
+  `year` year(4) DEFAULT NULL,
+  `price` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+
+/*
+CREATE USER 'user'@'%' IDENTIFIED BY 'user1234';
+GRANT SELECT,INSERT,UPDATE,DELETE ON cars.* TO 'user'@'%';
+*/

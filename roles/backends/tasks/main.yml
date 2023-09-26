@@ -1,0 +1,9 @@
+---
+- name: Include nftables service
+  include_tasks: nftables.yml
+
+- name: Include nginx service
+  include_tasks: nginx.yml
+
+- name: Include php-fpm service
+  include_tasks: php-fpm.yml

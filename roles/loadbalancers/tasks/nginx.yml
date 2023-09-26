@@ -1,0 +1,71 @@
+---
+- name: Debian OS
+  block:
+
+  # apt install nginx -y
+  - name: Install nginx Debian
+    ansible.builtin.apt:
+      name:
+        - nginx
+      state: latest
+      update_cache: yes
+  
+  when: ansible_os_family == "Debian"
+
+- name: Redhat OS
+  block:
+
+  # dnf install nginx -y
+  - name: Install nginx RedHat
+    ansible.builtin.dnf:
+      name:
+        - nginx
+      state: latest
+      enabled: yes
+  
+  when: ansible_os_family == "RedHat"
+  
+# cp ./nginx/conf.d/upstreams.conf.j2 /etc/nginx/conf.d/upstreams.conf
+# cp ./nginx/sites-available/upstreams.j2 /etc/nginx/sites-available/upstreams
+- name: Template nginx config files
+  ansible.builtin.template:
+    src: "nginx/{{ item }}.j2"
+    dest: "/etc/nginx/{{ item }}"
+  loop:
+    - conf.d/upstreams.conf
+    #- sites-available/upstreams
+
+# cp /etc/nginx/sites-available/{default,upstreams}
+- name: Copy file /etc/nginx/sites-available/default to upstreams
+  ansible.builtin.copy:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-available/upstreams
+    remote_src: true
+
+# sed -i 
+- name: Insert line proxy_pass to /etc/nginx/sites-available/upstreams
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/sites-available/upstreams
+    #regexp: '^Listen '
+    insertafter: '^\tlocation / {\n'
+    line: '                proxy_pass http://backend;'
+
+- name: Comment out the line /etc/nginx/sites-available/upstreams
+  ansible.builtin.replace:
+    path: /etc/nginx/sites-available/upstreams
+    regexp: '^\t\t(.*try_files \$uri \$uri/ =404;.*)'
+    replace: '\t\t#\1'
+
+# ln -s /etc/nginx/sites-{available/upstreams,enabled/default}
+- name: Create a symbolic default link to /etc/nginx/sites-available/upstreams
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/upstreams
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+
+# systemctl enable nginx --now
+- name: Start Nginx Service
+  ansible.builtin.systemd:
+    name: nginx
+    state: restarted
+    enabled: yes

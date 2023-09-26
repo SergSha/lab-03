@@ -1,0 +1,7 @@
+.env
+.terraform
+.terragrunt-cache
+.terraform.lock.hcl
+*.tfstate
+*tfstate.backup
+.DS_Store

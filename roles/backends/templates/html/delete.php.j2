@@ -1,0 +1,18 @@
+<?php
+if(isset($_POST["tb"]) && isset($_POST["id"]))
+{
+    $tb = $_POST["tb"];
+    try {
+        $conn = new PDO("mysql:host={{ ip_address['database-1'] }};port={{ mysql_port }};dbname={{ db_name }}", "{{ mysql_php_user }}", "{{ mysql_php_password }}");
+        $sql = "DELETE FROM $tb WHERE id = :id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(":id", $_POST["id"]);
+        $stmt->execute();
+        header("Location: index.php");
+    }
+    catch (PDOException $e) {
+        echo "Database error: " . $e->getMessage();
+    }
+}
+?>
+

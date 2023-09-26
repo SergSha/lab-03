@@ -1,0 +1,9 @@
+---
+#- name: Include chrony tasks
+#  include_tasks: chrony.yml
+
+- name: Include nftables service
+  include_tasks: nftables.yml
+
+- name: Include mysql service
+  include_tasks: percona.yml

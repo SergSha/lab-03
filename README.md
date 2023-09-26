@@ -24,6 +24,26 @@ otus | iSCSI, multipath and cluster file systems: GFS2
 
 #### Создание стенда
 
+Получаем OAUTH токен:
+```
+https://cloud.yandex.ru/docs/iam/concepts/authorization/oauth-token
+```
+Настраиваем аутентификации в консоли:
+```
+export YC_TOKEN=$(yc iam create-token)
+export TF_VAR_yc_token=$YC_TOKEN
+```
 
+Создадим директорий lab-01 и перейдём в него:
+```
+mkdir ./lab-02 && cd ./lab-02/
+```
+Создадим необходимые файлы. Размещены в репозитории GitHub по ссылке:
+```
+https://github.com/SergSha/lab-02.git
+```
+
+Схема:
+<img src="pics/infra.png" alt="infra.png" />
 
 

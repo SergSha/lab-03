@@ -1,0 +1,285 @@
+#- name: Create share mysql data folder
+#  file:
+#    path: /data
+#    state: directory
+#    mode: 0777
+
+#- name: Copy config files
+#  ansible.builtin.template:
+#    src: percona/cars.sql
+#    dest: /data/cars.sql
+
+- name: Debian OS
+  block:
+
+  # apt install gnupg2
+  - name: Install gnupg2 Debian
+    ansible.builtin.apt:
+      name: 
+        - gnupg2
+        - lsb-release
+        - python3-mysqldb
+      state: latest
+      update_cache: true
+
+  # wget https://repo.percona.com/apt/percona-release_latest.generic_all.deb
+  # dpkg -i ./percona-release_latest.generic_all.deb
+  - name: Install a .deb package from the internet Debian
+    ansible.builtin.apt:
+      deb: https://repo.percona.com/apt/percona-release_latest.generic_all.deb
+      update_cache: yes
+
+  - name: Update apt cache
+    ansible.builtin.apt: 
+      update_cache: yes
+
+  - name: percona-release setup ps80
+    ansible.builtin.shell: percona-release setup ps80
+
+  # apt install percona-server-server
+  - name: Install percona-server-server
+    ansible.builtin.apt:
+      name: 
+        - percona-server-server
+      state: latest
+      update_cache: true
+
+  - name: Copy .my.cnf file with root password credentials
+    ansible.builtin.template: 
+      src: percona/root-my.cnf.j2
+      dest: /root/.my.cnf
+      owner: root
+      mode: 0600
+
+  - name: Update MySQL root password
+    community.mysql.mysql_user: 
+      name: root 
+      host: "{{ item }}"
+      password: "{{ mysql_root_password }}"
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+      check_implicit_admin: yes
+    with_items:
+      - "{{ ansible_hostname }}"
+      - 127.0.0.1
+      - localhost
+    ignore_errors: true
+
+  - name: Ensure anonymous users are not in the database
+    community.mysql.mysql_user: 
+      name: ''
+      host: "{{ item }}"
+      state: absent
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+    with_items:
+      - "{{ ansible_hostname }}"
+      - localhost
+
+  - name: remove test database
+    community.mysql.mysql_db:
+      name: test
+      state: absent
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+
+ # - name: Create fnv1a_64
+ #   ansible.builtin.shell: /usr/bin/mysql -e "CREATE FUNCTION fnv1a_64 RETURNS INTEGER SONAME 'libfnv1a_udf.so'" && touch /var/log/libfnv1a_udf.so.done creates=/var/log/libfnv1a_udf.so.done
+
+ # - name: Create fnv_64
+ #   ansible.builtin.shell: /usr/bin/mysql -e "CREATE FUNCTION fnv_64 RETURNS INTEGER SONAME 'libfnv_udf.so'" && touch /var/log/libfnv_udf.so.done creates=/var/log/libfnv_udf.so.done
+
+ # - name: Create murmur_hash
+ #   ansible.builtin.shell: /usr/bin/mysql -e "CREATE FUNCTION murmur_hash RETURNS INTEGER SONAME 'libmurmur_udf.so'" && touch /var/log/libmurmur_udf.so.done creates=/var/log/libmurmur_udf.so.done
+
+
+# mysql -e "CREATE FUNCTION fnv1a_64 RETURNS INTEGER SONAME 'libfnv1a_udf.so'"
+# mysql -e "CREATE FUNCTION fnv_64 RETURNS INTEGER SONAME 'libfnv_udf.so'"
+# mysql -e "CREATE FUNCTION murmur_hash RETURNS INTEGER SONAME 'libmurmur_udf.so'"
+
+  - name: Create fnv1a_64
+    ansible.builtin.shell: /usr/bin/mysql -e "CREATE FUNCTION fnv1a_64 RETURNS INTEGER SONAME 'libfnv1a_udf.so'"
+    
+  - name: Create fnv_64
+    ansible.builtin.shell: /usr/bin/mysql -e "CREATE FUNCTION fnv_64 RETURNS INTEGER SONAME 'libfnv_udf.so'"
+
+  - name: Create murmur_hash
+    ansible.builtin.shell: /usr/bin/mysql -e "CREATE FUNCTION murmur_hash RETURNS INTEGER SONAME 'libmurmur_udf.so'"
+
+  #- name: Copy config files
+  #  ansible.builtin.template:
+  #    src: "percona/{{ item }}.j2"
+  #    dest: "/etc/mysql/conf.d/{{ item }}"
+  #  loop:
+  #  - 01-base.cnf
+  #  - 02-max-connections.cnf
+  #  - 03-performance.cnf
+  #  - 04-slow-query.cnf
+  #  - 05-binlog.cnf
+
+  - name: Write custom server configuration
+    ansible.builtin.template:
+      src: percona/my.cnf.j2
+      dest: /etc/mysql/my.cnf
+      owner: root
+      mode: 0644
+    #notify:
+    #  - Restart Percona service
+
+  # systemctl restart percona
+  - name: Restart Percona service
+    ansible.builtin.service:
+      name: mysql
+      state: restarted
+      enabled: yes
+
+  - name: Create application database
+    community.mysql.mysql_db: 
+      name: "{{ db_name }}"
+      state: "present"
+      collation: "{{ db_collation }}"
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+    tags:
+      - createdatabase
+
+  - name: Copy SQL dump file to the server
+    ansible.builtin.copy:
+      src: "percona/{{ db_dump_file }}"
+      dest: /tmp
+    when: db_dump_file != ""
+    tags:
+      - copydumpfile
+      - dumpfile
+
+  - name: Dump file into the database
+    community.mysql.mysql_db: 
+      name: "{{ db_name }}"
+      state: import
+      target: "/tmp/{{ db_dump_file | basename }}"
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+    when: db_dump_file != ""
+    tags:
+      - dumpfile
+
+  - name: Create Application user database
+    community.mysql.mysql_user: 
+      name: "{{  db_user }}"
+      password: "{{ db_user_password }}"
+      priv: "{{ db_name }}.*:ALL"
+      host: "{{ db_host }}"
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+    tags:
+      - createuserdatabase
+
+  - name: Create Application user database
+    community.mysql.mysql_user:
+      name: "{{  mysql_php_user }}"
+      password: "{{ mysql_php_password }}"
+      priv: "{{ db_name }}.*:ALL"
+      host: "{{ db_host }}"
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+    tags:
+      - createuserdatabase
+
+  when: ansible_os_family == "Debian"
+
+- name: RedHat OS
+  block:
+
+  # wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb
+  # dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb
+  - name: Install a .rpm package from the internet RedHat
+    ansible.builtin.dnf:
+      deb: $ sudo yum install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+
+  # dnf install Percona-Server-server-57
+  - name: Install percona-server-server-5.7 RedHat
+    ansible.builtin.dnf:
+      name: percona-server-server-5.7
+      state: latest
+  
+  - name: Copy config files
+    ansible.builtin.template:
+      src: "percona/{{ item }}.j2"
+      dest: "/etc/my.cnf.d/{{ item }}"
+    loop:
+    - 01-base.cnf
+    - 02-max-connections.cnf
+    - 03-performance.cnf
+    - 04-slow-query.cnf
+    - 05-binlog.cnf
+
+  - name: Start MySQL service
+    ansible.builtin.service:
+      name: mysql
+      state: restarted
+      enabled: yes
+
+  - name: Get temporary mysql root password
+    ansible.builtin.shell: cat /var/log/mysqld.log | grep 'root@localhost:' | awk '{print $11}'
+    register: temp_mysql_root_password
+
+  - name: Update mysql root password
+    ansible.builtin.command: mysql -uroot -p'{{ temp_mysql_root_password.stdout }}' --connect-expired-password -e "ALTER USER USER() IDENTIFIED BY '{{ mysql_root_password }}';"
+    ignore_errors: true
+
+  - name: data | Create mysql user '{{ mysql_php_user }}' for php site admin
+    ansible.builtin.command: mysql -e "CREATE USER '{{ mysql_php_user }}'@'%' IDENTIFIED WITH mysql_native_password BY '{{ mysql_php_password }}';"
+
+  - name: data | Grant php site admin for mysql user '{{ mysql_php_user }}'
+    ansible.builtin.command: mysql -e "GRANT ALL PRIVILEGES ON *.* TO '{{ mysql_php_user }}'@'%';" 
+                   # GRANT ALL PRIVILEGES ON *.* TO 'phpadmin'@'%' WITH GRANT OPTION;
+    ignore_errors: true
+
+  # systemctl restart mysql
+  - name: data | Restart MySQL service
+    ansible.builtin.service:
+      name: mysql
+      state: restarted
+
+  - name: data | Upload database to mysql
+    ansible.builtin.shell: mysql -e "CREATE DATABASE cars;" && cat /data/cars.sql | mysql cars
+    ignore_errors: true
+
+  when: ansible_os_family == "RedHat"
+
+
+
+
+
+
+
+#- name: Copy mysql backup and restore scripts
+#  ansible.builtin.template:
+#    src: "{{ item }}.j2"
+#    dest: "/usr/local/bin/{{ item }}"
+#    owner: root
+#    mode: 0755
+#  loop:
+#  - mysql-backup.sh
+#  - mysql-restore.sh
+
+
+#- name: Include master server tasks
+#  include_tasks: master.yml
+#  when: '"database-1" in ansible_hostname'
+
+#- name: Include replica server tasks
+#  include_tasks: replica.yml
+#  when: '"replica" in ansible_hostname'
+
+#- name: Include backup server tasks
+#  include_tasks: backup.yml
+#  when: '"backup" in ansible_hostname'
+
+## rm -rf /data/
+#- name: Delete share mysql data folder
+#  ansible.builtin.file:
+#    path: /data
+#    state: absent

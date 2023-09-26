@@ -1,0 +1,68 @@
+<?php 
+try {
+    $conn = new PDO("mysql:host={{ ip_address['database-1'] }};port={{ mysql_port }};dbname={{ db_name }}", "{{ mysql_php_user }}", "{{ mysql_php_password }}");
+}
+catch (PDOException $e) {
+    die("Database error: " . $e->getMessage());
+}
+// если запрос GET
+if($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["tb"]) && isset($_GET["id"]))
+{
+    $tb = $_GET["tb"];
+    $id = $_GET["id"];
+    $sql = "SELECT * FROM $tb WHERE id = $id";
+    $stmt = $conn->prepare($sql);
+    //$stmt->bindValue(":tb", $tb);
+    //$stmt->bindValue(":id", $id);
+    // выполняем выражение и получаем пользователя по id
+    $stmt->execute();
+    if($stmt->rowCount() > 0){
+        foreach ($stmt as $row) {
+            $name = $row["name"];
+            $year = $row["year"];
+            $price = $row["price"];
+        }
+        echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <title>Update car</title>
+                <meta charset=\"utf-8\" />
+            </head>
+            <body>
+                <h3>Update car data</h3>
+                <form method='post'>
+                    <input type='hidden' name='tb' value='$tb' />
+                    <input type='hidden' name='id' value='$id' />
+                    <p>Name:
+                    <input type='text' name='name' value='$name' /></p>
+                    <p>Year of manufacture:
+                    <input type='year' name='year' value='$year' /></p>
+                    <p>Price:
+                    <input type='number' name='price' value='$price' /></p>
+                    <input type='submit' value='Save' />
+                </form>
+            </body>
+            </html>";
+    }
+    else{
+        echo "Object not found";
+    }
+}
+elseif (isset($_POST["tb"]) && isset($_POST["id"]) && isset($_POST["name"]) && isset($_POST["year"]) && isset($_POST["price"])) {
+      
+    $tb = $_POST["tb"];
+    $sql = "UPDATE $tb SET name = :name, year = :year, price = :price WHERE id = :id";
+    $stmt = $conn->prepare($sql);
+    //$stmt->bindValue(":tb", $_POST["tb"]);
+    $stmt->bindValue(":id", $_POST["id"]);
+    $stmt->bindValue(":name", $_POST["name"]);
+    $stmt->bindValue(":year", $_POST["year"]);
+    $stmt->bindValue(":price", $_POST["price"]);
+          
+    $stmt->execute();
+    header("Location: index.php");
+}
+else{
+    echo "Uncorrect data";
+}
+?>

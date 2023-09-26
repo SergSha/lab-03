@@ -1,0 +1,6 @@
+# Balance server
+
+upstream backend {
+        server {{ ip_address['backend-1'] }}:80 max_fails=2 fail_timeout=90s;
+        server {{ ip_address['backend-2'] }}:80 max_fails=2 fail_timeout=90s;
+}
