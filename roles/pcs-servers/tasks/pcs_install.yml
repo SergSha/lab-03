@@ -1,0 +1,88 @@
+---
+#- name: Debian OS
+#  block:
+  
+#  when: ansible_os_family == "Debian"
+
+- name: Redhat OS
+  block:
+
+  # dnf install nginx -y
+  - name: Install epel-release
+    ansible.builtin.dnf:
+      name:
+        - epel-release
+      state: present
+
+  - name: Install additional packages
+    ansible.builtin.dnf:
+      name:
+        - python3-cryptography
+        - setools-console
+        - libsemanage-python3
+        - policycoreutils-python3
+    state: present
+
+  - name: Install Pacemaker
+    ansible.builtin.dnf:
+      name:
+        - pcs
+        - pacemaker
+        - fence-agents-all
+    state: present
+  
+  when: ansible_os_family == "RedHat"
+  
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ ansible_hostname }}.{{ domain }}"
+
+- name: Add my own IP address to /etc/hosts instead localhost
+  ansible.builtin.replace:
+    path: "/etc/hosts"
+    regexp: '^127\.0\.0\.1(\s+){{ ansible_hostname }}(\s+){{ ansible_hostname }}.*'
+    replace: "{{ ansible_host }} {{ ansible_hostname }}.{{ domain }} {{ ansible_hostname }}"
+
+- name: Add pcs-01 to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: "/etc/hosts"
+    state: present
+    line: "{{ ip_address.pcs-01 }} pcs-01.{{ domain }} pcs-01"
+
+- name: Add pcs-02 to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: "/etc/hosts"
+    state: present
+    line: "{{ ip_address.pcs-02 }} pcs-02.{{ domain }} pcs-02"
+
+- name: Add pcs-03 to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: "/etc/hosts"
+    state: present
+    line: "{{ ip_address.pcs-03 }} pcs-03.{{ domain }} pcs-03"
+
+- name: Set password for local hacluster user
+  ansible.builtin.user:
+    name: "hacluster"
+    password: "{{ pcs_password | string | password_hash('sha512') }}" 
+    state: present
+    update_password: always
+    create_home: yes
+  notify: "restart pcsd"
+  no_log: true
+
+- name: Redhat OS
+  block:
+
+  - name: Allow cluster processes on SELinux
+    ansible.builtin.seboolean:
+      name: daemons_enable_cluster_mode
+      state: yes
+      persistent: yes
+
+  when: ansible_os_family == "RedHat"
+  
+- name: Enable Pacemaker service
+  ansible.builtin.systemd:
+    name: pcsd.service
+    enabled: true

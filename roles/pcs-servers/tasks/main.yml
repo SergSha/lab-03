@@ -2,5 +2,9 @@
 #- name: Include nftables service
 #  include_tasks: nftables.yml
 
-- name: Include nginx service
-  include_tasks: pcs.yml
+- name: Include pcs service
+  include_tasks: pcs_install.yml
+
+- name: Include pcs service
+  include_tasks: pcs_config.yml
+  when: "'pcs-01' in ansible_host"

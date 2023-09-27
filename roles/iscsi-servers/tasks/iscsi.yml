@@ -8,12 +8,11 @@
   block:
 
   # dnf install targetcli -y
-  - name: Install nginx RedHat
+  - name: Install targetcli RedHat
     ansible.builtin.dnf:
       name:
         - targetcli
       state: latest
-      enabled: yes
   
   when: ansible_os_family == "RedHat"
 
@@ -35,40 +34,52 @@
 - name: Create fileio /var/iSCSI/file0.IMG
   ansible.builtin.command: targetcli /backstores/fileio create name=file0 size=1G file_or_dev=/var/iSCSI/file0.IMG
   notify: targetcli saveconfig
+  ignore_errors: true
 
 # targetcli /backstores/block create name=block0 dev=/dev/vdb
 - name: Create block /dev/vdb
   ansible.builtin.command: targetcli /backstores/block create name=block0 dev=/dev/vdb
   notify: targetcli saveconfig
+  ignore_errors: true
 
 # targetcli /backstores/ramdisk create name=ram0 size=1G
 - name: Create ramdisk ram0
   ansible.builtin.command: targetcli /backstores/ramdisk create name=ram0 size=1G
   notify: targetcli saveconfig
+  ignore_errors: true
 
 # targetcli /iscsi create wwn=iqn.2023-09.local.otus:storage.target00
 - name: Create 
   ansible.builtin.command: targetcli /iscsi create wwn=iqn.2023-09.local.otus:storage.target00
   notify: targetcli saveconfig
+  ignore_errors: true
 
-# targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/portals create 0.0.0.0
-- name: Create portals for ip 0.0.0.0
-  ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/portals create 0.0.0.0
-  notify: targetcli saveconfig
+## targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/portals create 0.0.0.0
+#- name: Create portals for ip 0.0.0.0
+#  ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/portals create 0.0.0.0
+#  notify: targetcli saveconfig
+#  ignore_errors: true
 
-# targetcli /iscsi/iqn.2018-09.ru.otus:storage.target00/tpg1/luns create /backstores/block/disk01 lun=1
 # targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/luns create /backstores/fileio/file0 lun=0
 - name: Create LUN0 for fileio target file0
   ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/luns create /backstores/fileio/file0 lun=0
   notify: targetcli saveconfig
+  ignore_errors: true
 
 # targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/luns create /backstores/block/block0 lun=1
 - name: Create LUN1 for block target block0
   ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/luns create /backstores/block/block0 lun=1
   notify: targetcli saveconfig
+  ignore_errors: true
   
 # targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/luns create /backstores/ramdisk/ram0 lun=2
 - name: Create LUN1 for ramdisk target ram0
   ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/luns create /backstores/ramdisk/ram0 lun=2
   notify: targetcli saveconfig
+  ignore_errors: true
   
+# targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/acls create iqn.2023-09.local.otus:pcs
+- name: Create ACL access
+  ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/acls create iqn.2023-09.local.otus:pcs
+  notify: targetcli saveconfig
+  ignore_errors: true
