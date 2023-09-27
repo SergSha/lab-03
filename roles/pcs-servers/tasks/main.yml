@@ -7,4 +7,4 @@
 
 - name: Include pcs service
   include_tasks: pcs_config.yml
-  when: "'pcs-01' in ansible_host"
+  when: "ansible_hostname in 'pcs-01'"

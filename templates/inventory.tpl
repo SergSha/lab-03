@@ -16,9 +16,3 @@ ${ iscsi-server["name"] }
 %{ for pcs-server in pcs-servers ~}
 ${ pcs-server["name"] }
 %{ endfor ~}
-
-[all:vars]
-domain: "mydomain.test"
-ntp_timezone: "UTC"
-pcs_password: "strong_pass" # cluster user: hacluster
-cluster_name: "hacluster"

@@ -8,3 +8,9 @@ ip_address:
 %{ for pcs-server in pcs-servers ~}
   ${ pcs-server["name"] }: ${ pcs-server.network_interface[0].ip_address }
 %{ endfor ~}
+
+
+domain: "mydomain.test"
+ntp_timezone: "UTC"
+pcs_password: "strong_pass" # cluster user: hacluster
+cluster_name: "hacluster"

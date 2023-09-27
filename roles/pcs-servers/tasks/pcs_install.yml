@@ -21,7 +21,17 @@
         - setools-console
         - libsemanage-python3
         - policycoreutils-python3
-    state: present
+      state: present
+
+  ## dnf config-manager --set-enabled highavailability
+  #- name: Add repository AlmaLinux $releasever - HighAvailability
+  #  ansible.builtin.yum_repository:
+  #    name: highavailability
+  #    description: AlmaLinux - HighAvailability repo
+  #    #file: almalinux-highavailability
+  #    #baseurl: https://repo.almalinux.org/almalinux/$releasever/HighAvailability/$basearch/os/
+  #    mirrorlist: https://mirrors.almalinux.org/mirrorlist/$releasever/highavailability
+  #    enabled: yes
 
   - name: Install Pacemaker
     ansible.builtin.dnf:
@@ -29,7 +39,8 @@
         - pcs
         - pacemaker
         - fence-agents-all
-    state: present
+      enablerepo: highavailability
+      state: present
   
   when: ansible_os_family == "RedHat"
   
@@ -47,19 +58,19 @@
   ansible.builtin.lineinfile:
     path: "/etc/hosts"
     state: present
-    line: "{{ ip_address.pcs-01 }} pcs-01.{{ domain }} pcs-01"
+    line: "{{ ip_address['pcs-01'] }} pcs-01.{{ domain }} pcs-01"
 
 - name: Add pcs-02 to /etc/hosts
   ansible.builtin.lineinfile:
     path: "/etc/hosts"
     state: present
-    line: "{{ ip_address.pcs-02 }} pcs-02.{{ domain }} pcs-02"
+    line: "{{ ip_address['pcs-02'] }} pcs-02.{{ domain }} pcs-02"
 
 - name: Add pcs-03 to /etc/hosts
   ansible.builtin.lineinfile:
     path: "/etc/hosts"
     state: present
-    line: "{{ ip_address.pcs-03 }} pcs-03.{{ domain }} pcs-03"
+    line: "{{ ip_address['pcs-03'] }} pcs-03.{{ domain }} pcs-03"
 
 - name: Set password for local hacluster user
   ansible.builtin.user:

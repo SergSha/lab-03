@@ -60,7 +60,7 @@ data "yandex_compute_instance" "iscsi-servers" {
 
 module "pcs-servers" {
   source = "./modules/instances"
-  count = 1
+  count = 3
   vm_name = "pcs-${format("%02d", count.index + 1)}"
   vpc_name = local.vpc_name
   subnet_cidrs = yandex_vpc_subnet.subnet.v4_cidr_blocks
