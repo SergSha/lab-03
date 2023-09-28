@@ -1,0 +1,30 @@
+---
+#- name: Debian OS
+#  block:
+
+#  - name: Install additional packages
+#    ansible.builtin.apt:
+#      name:
+#        - open-iscsi
+#        - gfs2-utils
+#        - lvm2-cluster
+#      state: present
+
+#  when: ansible_os_family == "Debian"
+
+- name: Redhat OS
+  block:
+
+  # dnf install iscsi-initiator-utils gfs2-utils lvm2-cluster
+  - name: Install additional packages
+    ansible.builtin.dnf:
+      name:
+        - iscsi-initiator-utils
+        #- iscsi-initiator-utils-iscsiuio
+        - gfs2-utils
+        - lvm2-cluster
+      state: present
+      update_cache: true
+    when: "ansible_hostname in 'pcs-01'"
+  
+  when: ansible_os_family == "RedHat"

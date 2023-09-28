@@ -88,9 +88,15 @@ variable "allow_stopping_for_update" {
 #  type        = string
 #}
 
+#variable "image_id" {
+#  description = "Default image ID AlmaLinux 9"
+#  default     = "fd8cvn7c0lb5ub3ip3kn" # almalinux-9-v20230911
+#  type        = string
+#}
+
 variable "image_id" {
-  description = "Default image ID Debian 11"
-  default     = "fd8cvn7c0lb5ub3ip3kn" # almalinux-9-v20230911
+  description = "Default image ID AlmaLinux 8"
+  default     = "fd84itfojin92kj38vmb" # almalinux-8-v20230925
   type        = string
 }
 

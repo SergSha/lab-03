@@ -7,7 +7,7 @@
 - name: Redhat OS
   block:
 
-  # dnf install nginx -y
+  # dnf install epel-release -y
   - name: Install epel-release
     ansible.builtin.dnf:
       name:
@@ -39,7 +39,8 @@
         - pcs
         - pacemaker
         - fence-agents-all
-      enablerepo: highavailability
+      #enablerepo: highavailability # for almalinux 9
+      enablerepo: ha # for almalinux 8
       state: present
   
   when: ansible_os_family == "RedHat"
@@ -97,3 +98,7 @@
   ansible.builtin.systemd:
     name: pcsd.service
     enabled: true
+
+#- name: Pause for any seconds to build app cache
+#  ansible.builtin.pause:
+#    seconds: 20
