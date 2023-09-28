@@ -94,9 +94,10 @@
 
   when: ansible_os_family == "RedHat"
   
-- name: Enable Pacemaker service
+- name: Enable and start Pacemaker service
   ansible.builtin.systemd:
     name: pcsd.service
+    state: restarted
     enabled: true
 
 #- name: Pause for any seconds to build app cache

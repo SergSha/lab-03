@@ -24,7 +24,8 @@
         - gfs2-utils
         - lvm2-cluster
       state: present
-      update_cache: true
+      #enablerepo: highavailability # for almalinux 9
+      enablerepo: ha # for almalinux 8
     when: "ansible_hostname in 'pcs-01'"
   
   when: ansible_os_family == "RedHat"
