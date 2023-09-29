@@ -46,4 +46,4 @@ https://github.com/SergSha/lab-02.git
 Схема:
 <img src="pics/infra.png" alt="infra.png" />
 
-
+```https://www.golinuxcloud.com/setup-high-availability-cluster-centos-8/```

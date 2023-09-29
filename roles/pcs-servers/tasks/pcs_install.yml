@@ -33,14 +33,17 @@
   #    mirrorlist: https://mirrors.almalinux.org/mirrorlist/$releasever/highavailability
   #    enabled: yes
 
+  # dnf config-manager --set-enabled HighAvailability # for AlmaLinux 9
+  # dnf config-manager --set-enabled ha # for AlmaLinux 8
+  # dnf install pcs pacemaker fence-agents-all -y
   - name: Install Pacemaker
     ansible.builtin.dnf:
       name:
         - pcs
         - pacemaker
         - fence-agents-all
-      #enablerepo: highavailability # for almalinux 9
-      enablerepo: ha # for almalinux 8
+      #enablerepo: highavailability # for AlmaLinux 9
+      enablerepo: ha # for AlmaLinux 8
       state: present
   
   when: ansible_os_family == "RedHat"
