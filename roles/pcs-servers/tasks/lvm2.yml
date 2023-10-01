@@ -1,0 +1,62 @@
+---
+#- name: Debian OS
+#  block:
+
+#  - name: Install additional packages for lvm2
+#    ansible.builtin.apt:
+#      name:
+#        #- lvm2-cluster
+#        - lvm2
+#      state: present
+
+#  when: ansible_os_family == "Debian"
+
+- name: Redhat OS
+  block:
+
+  # dnf install iscsi-initiator-utils gfs2-utils lvm2-cluster
+  - name: Install additional packages for lvm2
+    ansible.builtin.dnf:
+      name:
+        #- lvm2-cluster
+        - lvm2
+      state: present
+
+  when: ansible_os_family == "RedHat"
+
+# pvcreate /dev/mapper/yellow-msk-iscsi-1
+#        sleep 10
+#        vgcreate -Ay -cy cluster_vg /dev/mapper/yellow-msk-iscsi-1
+#        sleep 5
+#        lvcreate -l 100%FREE -n cluster_lv cluster_vg
+
+- name: Activate a volume groups
+  community.general.lvg:
+    #state: present
+    vg: "{{ item.vg }}"
+    pvs: "{{ item.pvs }}"
+  with_items: 
+    - { vg: 'fileio_cluster_vg', pvs: '/dev/mapper/otusFileio' }
+    - { vg: 'block_cluster_vg', pvs: '/dev/mapper/otusBlock' }
+    - { vg: 'ramdisk_cluster_vg', pvs: '/dev/mapper/otusRamdisk' }
+
+- name: Create a logical volume the size of fileio
+  community.general.lvol:
+    #pvs: /dev/mapper/otusFileio
+    vg: fileio_cluster_vg
+    lv: file0_cluster_lv
+    size: 100%FREE
+
+- name: Create a logical volume the size of block
+  community.general.lvol:
+    #pvs: /dev/mapper/otusBlock
+    vg: block_cluster_vg
+    lv: block0_cluster_lv
+    size: 100%FREE
+
+- name: Create a logical volume the size of ramdisk
+  community.general.lvol:
+    #pvs: /dev/mapper/otusRamdisk
+    vg: ramdisk_cluster_vg
+    lv: ram0_cluster_lv
+    size: 100%FREE

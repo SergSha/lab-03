@@ -14,7 +14,7 @@
         - epel-release
       state: present
 
-  - name: Install additional packages
+  - name: Install additional packages for pcs cluster
     ansible.builtin.dnf:
       name:
         - python3-cryptography

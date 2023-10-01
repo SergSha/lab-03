@@ -14,3 +14,11 @@
 - name: Include pcs service
   include_tasks: pcs_config.yml
   when: "ansible_hostname in 'pcs-01'"
+
+- name: Include lvm2
+  include_tasks: lvm2.yml
+  when: "ansible_hostname in 'pcs-01'"
+
+- name: Include gfs2
+  include_tasks: gfs2.yml
+  when: "ansible_hostname in 'pcs-01'"

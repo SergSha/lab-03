@@ -2,7 +2,7 @@
 #- name: Debian OS
 #  block:
 
-#  - name: Install additional packages
+#  - name: Install additional packages for iscsi-initiator
 #    ansible.builtin.apt:
 #      name:
 #        - open-iscsi
@@ -16,7 +16,7 @@
   block:
 
   # dnf install iscsi-initiator-utils gfs2-utils lvm2-cluster
-  - name: Install additional packages
+  - name: Install additional packages for iscsi-initiator
     ansible.builtin.dnf:
       name:
         - iscsi-initiator-utils

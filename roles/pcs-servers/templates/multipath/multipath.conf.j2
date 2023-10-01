@@ -11,7 +11,15 @@ blacklist {
 }
 multipaths {
   multipath {
-    wwid 360014058f29dd52c67e4d25bdd1001ad
-    alias otusDsk
+    wwid {{ scsi_id_sda.stdout }}
+    alias otusFileio
+  }
+  multipath {
+    wwid {{ scsi_id_sdb.stdout }}
+    alias otusBlock
+  }
+  multipath {
+    wwid {{ scsi_id_sdc.stdout }}
+    alias otusRamdisk
   }
 }
