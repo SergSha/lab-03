@@ -76,6 +76,8 @@ variable "allow_stopping_for_update" {
   default     = true
 }
 
+# yc compute image list --folder-id standard-images
+
 #variable "image_id" {
 #  description = "Default image ID Ubuntu 20"
 #  default     = "fd879gb88170to70d38a" # ubuntu-20-04-lts-v20220404
@@ -99,6 +101,12 @@ variable "image_id" {
   default     = "fd84itfojin92kj38vmb" # almalinux-8-v20230925
   type        = string
 }
+
+#variable "image_id" {
+#  description = "Default image ID CentOS 7"
+#  default     = "fd85qh2iveusn11jcup6" # centos-7-v20230911
+#  type        = string
+#}
 
 variable "nat" {
   type    = bool

@@ -1,0 +1,17 @@
+defaults {
+  user_friendly_names yes
+  find_multipaths yes
+  path_selector "round-robin 0"
+  path_grouping_policy failover
+  failback immediate
+}
+blacklist {
+  devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+  devnode "^hd[a-z]"
+}
+multipaths {
+  multipath {
+    wwid 360014058f29dd52c67e4d25bdd1001ad
+    alias otusDsk
+  }
+}

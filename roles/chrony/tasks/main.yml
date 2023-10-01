@@ -2,6 +2,13 @@
 - name: Debian OS
   block:
 
+  ## dnf install glibc-langpack-ru -y
+  #- name: Installing Locale ru-RU
+  #  ansible.builtin.apt:
+  #    name:
+  #      - glibc-langpack-ru
+  #    state: present
+
   # apt install chrony -y
   - name: Installing Chrony Debian
     ansible.builtin.apt:
@@ -27,6 +34,13 @@
 
 - name: Redhat OS
   block:
+
+  ## dnf install glibc-langpack-ru -y
+  #- name: Installing Locale ru-RU
+  #  ansible.builtin.dnf:
+  #    name:
+  #      - glibc-langpack-ru
+  #    state: present
 
   # dnf install chrony -y
   - name: Installing Chrony RedHat

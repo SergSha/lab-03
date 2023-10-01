@@ -1,0 +1,18 @@
+- name: Setup multipath in PCS Servers
+  command: mpathconf --enable --with_multipathd y 
+
+- name: Copy multipath conf file
+  ansible.builtin.template:
+    src: multipath/multipath.conf.j2
+    dest: /etc/multipath.conf
+
+#- name: Setup multipath in PCS Servers
+#  shell: |
+#    wwid=`/usr/lib/udev/scsi_id --whitelisted --replace-whitespace --device=/dev/sda`
+#    sed -i "s/wwid*.*/wwid $wwid/g" /etc/multipath.conf
+
+#- name: "Enable and Start Multipathd Service"
+#  systemd:
+#    name: multipathd
+#    state: restarted
+#    enabled: true

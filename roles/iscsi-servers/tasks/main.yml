@@ -3,4 +3,4 @@
 #  include_tasks: nftables.yml
 
 - name: Include iscsi service
-  include_tasks: iscsi.yml
+  include_tasks: iscsi-target.yml

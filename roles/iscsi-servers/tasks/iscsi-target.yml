@@ -90,10 +90,35 @@
   #when: result is failed # failed, succeeded, skipped, changed
   notify: targetcli saveconfig
   ignore_errors: true
-  
-# targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/acls create iqn.2023-09.local.otus:pcs
-- name: Create ACL access
-  ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/acls create iqn.2023-09.local.otus:pcs
+
+# targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1 set attribute authentication=0
+- name: Set attribute authentication=0
+  ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1 set attribute authentication=0
   #when: result is failed # failed, succeeded, skipped, changed
+  notify: targetcli saveconfig
+  ignore_errors: true
+
+# targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1 set auth userid=otus
+- name: Set auth userid=otus
+  ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1 set auth userid=otus
+  #when: result is failed # failed, succeeded, skipped, changed
+  notify: targetcli saveconfig
+  ignore_errors: true
+
+# targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1 set auth password=otus1234
+- name: Set auth password=otus1234
+  ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1 set auth password=otus1234
+  #when: result is failed # failed, succeeded, skipped, changed
+  notify: targetcli saveconfig
+  ignore_errors: true
+  
+# targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/acls create iqn.2023-09.local.sergsha:pcs
+- name: Create ACL access
+  ansible.builtin.command: "targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/acls create {{ item }}"
+  #when: result is failed # failed, succeeded, skipped, changed
+  with_items: 
+    - iqn.2023-09.local.sergsha:pcs-01
+    - iqn.2023-09.local.sergsha:pcs-02
+    - iqn.2023-09.local.sergsha:pcs-03
   notify: targetcli saveconfig
   ignore_errors: true

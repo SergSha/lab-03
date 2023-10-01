@@ -22,10 +22,63 @@
         - iscsi-initiator-utils
         #- iscsi-initiator-utils-iscsiuio
         - gfs2-utils
-        - lvm2-cluster
+        #- lvm2-cluster
+        - lvm2
       state: present
       #enablerepo: highavailability # for almalinux 9
       enablerepo: ha # for almalinux 8
-    when: "ansible_hostname in 'pcs-01'"
-  
+
   when: ansible_os_family == "RedHat"
+
+# echo "InitiatorName=iqn.2023-09.local.sergsha:pcs-01" > /etc/iscsi/initiatorname.iscsi
+- name: echo "InitiatorName=iqn.2023-09.local.sergsha:pcs-01" > /etc/iscsi/initiatorname.iscsi
+  ansible.builtin.lineinfile:
+    path: /etc/iscsi/initiatorname.iscsi
+    regexp: '^InitiatorName='
+    line: "InitiatorName=iqn.2023-09.local.sergsha:{{ ansible_hostname }}"
+
+# systemctl reboot
+- name: Reboot machine and send a message
+  ansible.builtin.reboot:
+    msg: "Rebooting machine in a few seconds"
+
+# iscsiadm -m discovery -t st -p iscsi-server
+- name: iscsiadm -m discovery -t sendtargets -p iscsi-server
+  ansible.builtin.command: "iscsiadm --mode discovery --type sendtargets --portal {{ ip_address['iscsi-01'] }}"
+  ignore_errors: true
+  
+# iscsiadm -m node -l -T iqn.2023-09.local.otus:storage.target00
+- name: iscsiadm -m node -l -T iqn.2023-09.local.otus:storage.target00
+  ansible.builtin.command: iscsiadm -m node --login --targetname iqn.2023-09.local.otus:storage.target00
+  ignore_errors: true
+
+# systemctl enable iscsi --now  
+- name: "Enable and Start ISCSI Service"
+  systemd:
+    name: iscsi
+    state: restarted
+    enabled: true
+
+# iscsiadm -m session -o show
+# iscsiadm -m session -P3
+- name: Confirm that you are logged into your iSCSI Target Server
+  ansible.builtin.command: iscsiadm -m session -P3
+  register: result_iscsi_session
+
+# iscsiadm -m node -T iqn.2023-09.local.otus:storage.target00
+- name: Info iscsi connect
+  ansible.builtin.command: iscsiadm -m node -T iqn.2023-09.local.otus:storage.target00
+  register: result_iscsi_connect
+
+# lsscsi
+- name: Confirm that you are logged into your iSCSI Target Server
+  ansible.builtin.command: lsscsi
+  register: list_scsi_devices
+
+# echo $result_iscsi_session.stdout_lines $result_iscsi_connect.stdout_lines $list_scsi_devices
+- name: Info result iscsi session
+  ansible.builtin.debug:
+    msg:
+      - "{{ result_iscsi_session.stdout_lines }}"
+      - "{{ result_iscsi_connect.stdout_lines }}"
+      - "{{ list_scsi_devices.stdout_lines }}"
