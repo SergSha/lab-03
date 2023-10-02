@@ -17,6 +17,7 @@
   when:
     - pcs_config_done.stat.exists != True
 
+# touch /opt/pcs_config_done
 - name: Set replay protection (/opt/pcs_config_done)
   ansible.builtin.file:
     path: /opt/pcs_config_done
@@ -32,3 +33,47 @@
   with_items:
     - "pcs cluster enable --all"
     - "pcs cluster start --all"
+
+# pcs property set stonith-enabled=false
+- name: pcs property set stonith-enabled=false
+  ansible.builtin.command: "{{ item }}"
+  with_items:
+    - "pcs property set stonith-enabled=false"
+
+# pcs property set no-quorum-policy=freeze
+- name: pcs property set no-quorum-policy=freeze
+  ansible.builtin.command: "{{ item }}"
+  with_items:
+    - "pcs property set no-quorum-policy=freeze"
+
+# pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+- name: pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+  ansible.builtin.command: "{{ item }}"
+  with_items:
+    - "pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true"
+
+# pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+- name: pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+  ansible.builtin.command: "{{ item }}"
+  with_items:
+    - "pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true"
+
+# pcs constraint order start dlm-clone then clvmd-clone
+- name: pcs constraint order start dlm-clone then clvmd-clone
+  ansible.builtin.command: "{{ item }}"
+  with_items:
+    - "pcs constraint order start dlm-clone then clvmd-clone"
+
+- name: Include lvm2
+  include_tasks: lvm2.yml
+  when: "ansible_hostname in 'pcs-01'"
+
+- name: Include gfs2
+  include_tasks: gfs2.yml
+  when: "ansible_hostname in 'pcs-01'"
+
+# pcs resource create clusterfs Filesystem device="/dev/cluster_vg/cluster_lv" directory="/mnt/gfs2" fstype="gfs2" "options=noatime" op monitor interval=10s on-fail=ignore clone interleave=true
+
+# pcs constraint order start clvmd-clone then clusterfs-clone
+
+# pcs constraint colocation add clusterfs-clone with clvmd-clone

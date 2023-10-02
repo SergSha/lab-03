@@ -30,7 +30,7 @@
 #        sleep 5
 #        lvcreate -l 100%FREE -n cluster_lv cluster_vg
 
-- name: Activate a volume groups
+- name: Create a volume groups
   community.general.lvg:
     #state: present
     vg: "{{ item.vg }}"
@@ -46,6 +46,7 @@
     vg: fileio_cluster_vg
     lv: file0_cluster_lv
     size: 100%FREE
+  ignore_errors: true
 
 - name: Create a logical volume the size of block
   community.general.lvol:
@@ -53,6 +54,7 @@
     vg: block_cluster_vg
     lv: block0_cluster_lv
     size: 100%FREE
+  ignore_errors: true
 
 - name: Create a logical volume the size of ramdisk
   community.general.lvol:
@@ -60,3 +62,4 @@
     vg: ramdisk_cluster_vg
     lv: ram0_cluster_lv
     size: 100%FREE
+  ignore_errors: true
