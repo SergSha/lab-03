@@ -1,0 +1,67 @@
+---
+- name: Debian OS
+  block:
+
+  - name: Install additional packages for iscsi-initiator
+    ansible.builtin.apt:
+      name:
+        - open-iscsi
+        - device-mapper-multipath
+      state: present
+
+  when: ansible_os_family == "Debian"
+
+- name: Redhat OS
+  block:
+
+  # dnf install epel-release -y
+  - name: Install epel-release
+    ansible.builtin.dnf:
+      name:
+        - epel-release
+      state: present
+
+  # dnf install iscsi-initiator-utils gfs2-utils lvm2-cluster
+  - name: Install all packages
+    ansible.builtin.dnf:
+      name:
+        - iscsi-initiator-utils
+        #- iscsi-initiator-utils-iscsiuio
+        - device-mapper-multipath
+        - python3-cryptography
+        - setools-console
+        - libsemanage-python3
+        - policycoreutils-python3
+        - pcs
+        - pacemaker
+        - fence-agents-all
+      state: present
+      #enablerepo: highavailability # for almalinux 9
+      enablerepo: ha # for almalinux 8
+
+  when: ansible_os_family == "RedHat"
+
+# echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
+- name: echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
+  ansible.builtin.lineinfile:
+    path: /etc/lvm/lvm.conf
+    regexp: 'system_id_source ='
+    line: "system_id_source = 'uname'"
+
+# mkdir /mnt/lvm_cluster_file0
+# mkdir /mnt/lvm_cluster_block0
+- name: Create directories for cluster mount
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items: 
+    - /mnt/lvm_cluster_file0
+    - /mnt/lvm_cluster_block0
+
+# dracut -f
+- name: dracut -f
+  ansible.builtin.command: dracut -f
+
+# systemctl reboot # each node
+

@@ -34,7 +34,7 @@
     #state: present
     vg: "{{ item.vg }}"
     pvs: "{{ item.pvs }}"
-    vg_options: -Ay, -cy
+    vg_options: "-Ay -cy"
   with_items: 
     - { vg: 'fileio_cluster_vg', pvs: '/dev/mapper/otusFileio' }
     - { vg: 'block_cluster_vg', pvs: '/dev/mapper/otusBlock' }

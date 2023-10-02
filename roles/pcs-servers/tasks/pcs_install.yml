@@ -4,24 +4,24 @@
   
 #  when: ansible_os_family == "Debian"
 
-- name: Redhat OS
-  block:
+#- name: Redhat OS
+#  block:
 
   # dnf install epel-release -y
-  - name: Install epel-release
-    ansible.builtin.dnf:
-      name:
-        - epel-release
-      state: present
+  #- name: Install epel-release
+  #  ansible.builtin.dnf:
+  #    name:
+  #      - epel-release
+  #    state: present
 
-  - name: Install additional packages for pcs cluster
-    ansible.builtin.dnf:
-      name:
-        - python3-cryptography
-        - setools-console
-        - libsemanage-python3
-        - policycoreutils-python3
-      state: present
+  #- name: Install additional packages for pcs cluster
+  #  ansible.builtin.dnf:
+  #    name:
+  #      - python3-cryptography
+  #      - setools-console
+  #      - libsemanage-python3
+  #      - policycoreutils-python3
+  #    state: present
 
   ## dnf config-manager --set-enabled highavailability
   #- name: Add repository AlmaLinux $releasever - HighAvailability
@@ -33,20 +33,20 @@
   #    mirrorlist: https://mirrors.almalinux.org/mirrorlist/$releasever/highavailability
   #    enabled: yes
 
-  # dnf config-manager --set-enabled HighAvailability # for AlmaLinux 9
-  # dnf config-manager --set-enabled ha # for AlmaLinux 8
-  # dnf install pcs pacemaker fence-agents-all -y
-  - name: Install Pacemaker
-    ansible.builtin.dnf:
-      name:
-        - pcs
-        - pacemaker
-        - fence-agents-all
-      #enablerepo: highavailability # for AlmaLinux 9
-      enablerepo: ha # for AlmaLinux 8
-      state: present
+  ## dnf config-manager --set-enabled HighAvailability # for AlmaLinux 9
+  ## dnf config-manager --set-enabled ha # for AlmaLinux 8
+  ## dnf install pcs pacemaker fence-agents-all -y
+  #- name: Install Pacemaker
+  #  ansible.builtin.dnf:
+  #    name:
+  #      - pcs
+  #      - pacemaker
+  #      - fence-agents-all
+  #    #enablerepo: highavailability # for AlmaLinux 9
+  #    enablerepo: ha # for AlmaLinux 8
+  #    state: present
   
-  when: ansible_os_family == "RedHat"
+  #when: ansible_os_family == "RedHat"
   
 - name: Set hostname
   ansible.builtin.hostname:

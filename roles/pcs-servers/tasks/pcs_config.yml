@@ -66,20 +66,6 @@
 #  with_items:
 #    - "pcs constraint order start dlm-clone then clvmd-clone"
 
-
-
-
-
-# echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf # each node
-
-# dracut -f # each node
-
-# systemctl reboot # each node
-
-# mkdir /mnt/lvm_cluster_file0
-# mkdir /mnt/lvm_cluster_block0
-
-
 - name: Include lvm2
   include_tasks: lvm2.yml
   when: "ansible_hostname in 'pcs-01'"
@@ -89,16 +75,19 @@
   when: "ansible_hostname in 'pcs-01'"
 
 # pcs resource create clusterfs Filesystem device="/dev/cluster_vg/cluster_lv" directory="/mnt/gfs2" fstype="gfs2" "options=noatime" op monitor interval=10s on-fail=ignore clone interleave=true
-
 # pcs constraint order start clvmd-clone then clusterfs-clone
-
 # pcs constraint colocation add clusterfs-clone with clvmd-clone
 
+# pcs resource create fileio_cluster ocf:heartbeat:LVM-activate vgname=fileio_cluster_vg activation_mode=exclusive vg_access_mode=system_id --group HA-LVM
+- name: pcs resource create name_cluster ocf:heartbeat:LVM-activate vgname=cluster_vg activation_mode=exclusive vg_access_mode=system_id --group HA-LVM
+  ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:LVM-activate vgname={{ item.vg }} activation_mode=exclusive vg_access_mode=system_id --group {{ item.group }}"
+  with_items: 
+    - { name: 'fileio_cluster_vg', vg: 'fileio_cluster_vg', group: 'HA-LVM-FILE0' }
+    - { name: 'block_cluster_vg', vg: 'block_cluster_vg', group: 'HA-LVM-BLOCK0' }
 
-
-
-
-
-# pcs resource create my-vg ocf:heartbeat:LVM-activate vgname=cluster_vg activation_mode=exclusive vg_access_mode=system_id --group HA-LVM
-
-# [root@centos8-1 ~]# pcs resource create my-fs ocf:heartbeat:Filesystem device=/dev/cluster_vg/cluster_lv directory=/mnt/lvm_cluster fstype=gfs2 --group HA-LVM
+# pcs resource create my-fs ocf:heartbeat:Filesystem device=/dev/cluster_vg/cluster_lv directory=/mnt/lvm_cluster fstype=gfs2 --group HA-LVM
+- name: pcs property set no-quorum-policy=freeze
+  ansible.builtin.command: pcs resource create {{ item.name }} ocf:heartbeat:Filesystem device=/dev/cluster_vg/cluster_lv directory=/mnt/lvm_cluster fstype=gfs2 --group HA-LVM
+  with_items: 
+    - { name: 'fileio_cluster_fs', device: '/dev/fileio_cluster_vg/file0_cluster_lv', mnt: /mnt/lvm_cluster_file0, group: 'HA-LVM-FILE0' }
+    - { name: 'block_cluster_fs', device: '/dev/block_cluster_vg/block0_cluster_lv', mnt: /mnt/lvm_cluster_block0, group: 'HA-LVM-BLOCK0' }

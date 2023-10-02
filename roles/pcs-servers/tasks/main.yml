@@ -2,16 +2,19 @@
 #- name: Include nftables service
 #  include_tasks: nftables.yml
 
-- name: Include iscsi-initiator Configuring
-  include_tasks: iscsi-initiator.yml
+- name: Include install_packages
+  include_tasks: install_packages.yml
+
+- name: Include iscsi_initiator Configuring
+  include_tasks: iscsi_initiator.yml
 
 - name: Include multipath configure
   include_tasks: multipath.yml
 
-- name: Include pcs service
+- name: Include setup pcs service
   include_tasks: pcs_install.yml
 
-- name: Include pcs service
+- name: Include configure pcs service
   include_tasks: pcs_config.yml
   when: "ansible_hostname in 'pcs-01'"
 

@@ -12,23 +12,20 @@
 
 #  when: ansible_os_family == "Debian"
 
-- name: Redhat OS
-  block:
+#- name: Redhat OS
+#  block:
 
-  # dnf install iscsi-initiator-utils gfs2-utils lvm2-cluster
-  - name: Install additional packages for iscsi-initiator
-    ansible.builtin.dnf:
-      name:
-        - iscsi-initiator-utils
-        #- iscsi-initiator-utils-iscsiuio
-        - gfs2-utils
-        #- lvm2-cluster
-        - lvm2
-      state: present
-      #enablerepo: highavailability # for almalinux 9
-      enablerepo: ha # for almalinux 8
+  ## dnf install iscsi-initiator-utils gfs2-utils lvm2-cluster
+  #- name: Install additional packages for iscsi-initiator
+  #  ansible.builtin.dnf:
+  #    name:
+  #      - iscsi-initiator-utils
+  #      #- iscsi-initiator-utils-iscsiuio
+  #    state: present
+  #    #enablerepo: highavailability # for almalinux 9
+  #    enablerepo: ha # for almalinux 8
 
-  when: ansible_os_family == "RedHat"
+  #when: ansible_os_family == "RedHat"
 
 # echo "InitiatorName=iqn.2023-09.local.sergsha:pcs-01" > /etc/iscsi/initiatorname.iscsi
 - name: echo "InitiatorName=iqn.2023-09.local.sergsha:pcs-01" > /etc/iscsi/initiatorname.iscsi
