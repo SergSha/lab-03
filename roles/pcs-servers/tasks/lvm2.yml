@@ -5,8 +5,7 @@
 #  - name: Install additional packages for lvm2
 #    ansible.builtin.apt:
 #      name:
-#        #- lvm2-cluster
-#        - lvm2
+#        - clvm
 #      state: present
 
 #  when: ansible_os_family == "Debian"
@@ -24,22 +23,24 @@
 
   when: ansible_os_family == "RedHat"
 
-# pvcreate /dev/mapper/yellow-msk-iscsi-1
-#        sleep 10
-#        vgcreate -Ay -cy cluster_vg /dev/mapper/yellow-msk-iscsi-1
-#        sleep 5
-#        lvcreate -l 100%FREE -n cluster_lv cluster_vg
-
+# pvcreate /dev/mapper/otusFileio
+# pvcreate /dev/mapper/otusBlock
+# pvcreate /dev/mapper/otusRamdisk
+# vgcreate -Ay -cy fileio_cluster_vg /dev/mapper/otusFileio
+# vgcreate -Ay -cy block_cluster_vg /dev/mapper/otusBlock
+# vgcreate -Ay -cy ramdisk_cluster_vg /dev/mapper/otusRamdisk
 - name: Create a volume groups
   community.general.lvg:
     #state: present
     vg: "{{ item.vg }}"
     pvs: "{{ item.pvs }}"
+    vg_options: -Ay, -cy
   with_items: 
     - { vg: 'fileio_cluster_vg', pvs: '/dev/mapper/otusFileio' }
     - { vg: 'block_cluster_vg', pvs: '/dev/mapper/otusBlock' }
     - { vg: 'ramdisk_cluster_vg', pvs: '/dev/mapper/otusRamdisk' }
 
+# lvcreate -l 100%FREE -n file0_cluster_lv fileio_cluster_vg
 - name: Create a logical volume the size of fileio
   community.general.lvol:
     #pvs: /dev/mapper/otusFileio
@@ -48,6 +49,7 @@
     size: 100%FREE
   ignore_errors: true
 
+# lvcreate -l 100%FREE -n block0_cluster_lv block_cluster_vg
 - name: Create a logical volume the size of block
   community.general.lvol:
     #pvs: /dev/mapper/otusBlock
@@ -56,6 +58,7 @@
     size: 100%FREE
   ignore_errors: true
 
+# lvcreate -l 100%FREE -n ram0_cluster_lv ramdisk_cluster_vg
 - name: Create a logical volume the size of ramdisk
   community.general.lvol:
     #pvs: /dev/mapper/otusRamdisk

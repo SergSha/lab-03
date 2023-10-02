@@ -7,12 +7,12 @@ ${ iscsi-server["name"] } ansible_host=${ iscsi-server.network_interface[0].nat_
 ${ pcs-server["name"] } ansible_host=${ pcs-server.network_interface[0].nat_ip_address }
 %{ endfor ~}
 
-[iscsi-servers]
+[iscsi_servers]
 %{ for iscsi-server in iscsi-servers ~}
 ${ iscsi-server["name"] }
 %{ endfor ~}
 
-[pcs-servers]
+[pcs_servers]
 %{ for pcs-server in pcs-servers ~}
 ${ pcs-server["name"] }
 %{ endfor ~}

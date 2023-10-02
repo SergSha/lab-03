@@ -85,7 +85,7 @@
   ignore_errors: true
   
 # targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/luns create /backstores/ramdisk/ram0 lun=2
-- name: Create LUN1 for ramdisk target ram0
+- name: Create LUN2 for ramdisk target ram0
   ansible.builtin.command: targetcli /iscsi/iqn.2023-09.local.otus:storage.target00/tpg1/luns create /backstores/ramdisk/ram0 lun=2
   #when: result is failed # failed, succeeded, skipped, changed
   notify: targetcli saveconfig

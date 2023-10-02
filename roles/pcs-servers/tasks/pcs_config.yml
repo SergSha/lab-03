@@ -34,6 +34,8 @@
     - "pcs cluster enable --all"
     - "pcs cluster start --all"
 
+# https://www.golinuxcloud.com/setup-high-availability-cluster-centos-8/
+
 # pcs property set stonith-enabled=false
 - name: pcs property set stonith-enabled=false
   ansible.builtin.command: "{{ item }}"
@@ -46,23 +48,37 @@
   with_items:
     - "pcs property set no-quorum-policy=freeze"
 
-# pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
-- name: pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
-  ansible.builtin.command: "{{ item }}"
-  with_items:
-    - "pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true"
+## pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+#- name: pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+#  ansible.builtin.command: "{{ item }}"
+#  with_items:
+#    - "pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true"
 
-# pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
-- name: pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
-  ansible.builtin.command: "{{ item }}"
-  with_items:
-    - "pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true"
+## pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+#- name: pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+#  ansible.builtin.command: "{{ item }}"
+#  with_items:
+#    - "pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true"
 
-# pcs constraint order start dlm-clone then clvmd-clone
-- name: pcs constraint order start dlm-clone then clvmd-clone
-  ansible.builtin.command: "{{ item }}"
-  with_items:
-    - "pcs constraint order start dlm-clone then clvmd-clone"
+## pcs constraint order start dlm-clone then clvmd-clone
+#- name: pcs constraint order start dlm-clone then clvmd-clone
+#  ansible.builtin.command: "{{ item }}"
+#  with_items:
+#    - "pcs constraint order start dlm-clone then clvmd-clone"
+
+
+
+
+
+# echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf # each node
+
+# dracut -f # each node
+
+# systemctl reboot # each node
+
+# mkdir /mnt/lvm_cluster_file0
+# mkdir /mnt/lvm_cluster_block0
+
 
 - name: Include lvm2
   include_tasks: lvm2.yml
@@ -77,3 +93,12 @@
 # pcs constraint order start clvmd-clone then clusterfs-clone
 
 # pcs constraint colocation add clusterfs-clone with clvmd-clone
+
+
+
+
+
+
+# pcs resource create my-vg ocf:heartbeat:LVM-activate vgname=cluster_vg activation_mode=exclusive vg_access_mode=system_id --group HA-LVM
+
+# [root@centos8-1 ~]# pcs resource create my-fs ocf:heartbeat:Filesystem device=/dev/cluster_vg/cluster_lv directory=/mnt/lvm_cluster fstype=gfs2 --group HA-LVM

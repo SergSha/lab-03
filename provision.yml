@@ -6,5 +6,5 @@
 
   roles:
     - chrony
-    - { role: iscsi-servers, when: "'iscsi-servers' in group_names" }
-    - { role: pcs-servers, when: "'pcs-servers' in group_names" }
+    - { role: iscsi-servers, when: "'iscsi_servers' in group_names" }
+    - { role: pcs-servers, when: "'pcs_servers' in group_names" }
