@@ -48,6 +48,8 @@
   with_items:
     - "pcs property set no-quorum-policy=freeze"
 
+#### Вместо CLVMD заменить LVMLOCKD ####
+
 ## pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
 #- name: pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
 #  ansible.builtin.command: "{{ item }}"

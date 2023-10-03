@@ -10,18 +10,18 @@
 
 #  when: ansible_os_family == "Debian"
 
-- name: Redhat OS
-  block:
+#- name: Redhat OS
+#  block:
 
-  # dnf install iscsi-initiator-utils gfs2-utils lvm2-cluster
-  - name: Install additional packages for lvm2
-    ansible.builtin.dnf:
-      name:
-        #- lvm2-cluster
-        - lvm2
-      state: present
+  ## dnf install iscsi-initiator-utils gfs2-utils lvm2-cluster
+  #- name: Install additional packages for lvm2
+  #  ansible.builtin.dnf:
+  #    name:
+  #      #- lvm2-cluster
+  #      - lvm2
+  #    state: present
 
-  when: ansible_os_family == "RedHat"
+  #when: ansible_os_family == "RedHat"
 
 # pvcreate /dev/mapper/otusFileio
 # pvcreate /dev/mapper/otusBlock
@@ -34,7 +34,8 @@
     #state: present
     vg: "{{ item.vg }}"
     pvs: "{{ item.pvs }}"
-    vg_options: "-Ay -cy"
+    #vg_options: "-Ay -cy" # "--autobackup y --clustered y"
+    vg_options: "-Ay --shared"
   with_items: 
     - { vg: 'fileio_cluster_vg', pvs: '/dev/mapper/otusFileio' }
     - { vg: 'block_cluster_vg', pvs: '/dev/mapper/otusBlock' }

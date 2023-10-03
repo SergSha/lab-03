@@ -35,6 +35,8 @@
         - pcs
         - pacemaker
         - fence-agents-all
+        - lvm2
+        - gfs2-utils
       state: present
       #enablerepo: highavailability # for almalinux 9
       enablerepo: ha # for almalinux 8
@@ -45,8 +47,11 @@
 - name: echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
   ansible.builtin.lineinfile:
     path: /etc/lvm/lvm.conf
-    regexp: 'system_id_source ='
-    line: "system_id_source = 'uname'"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items: 
+    - { regexp: "system_id_source =", line: "system_id_source = 'uname'" }
+    - { regexp: "use_lvmlockd =", line: "use_lvmlockd = 1" }
 
 # mkdir /mnt/lvm_cluster_file0
 # mkdir /mnt/lvm_cluster_block0
