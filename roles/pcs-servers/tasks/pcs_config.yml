@@ -38,35 +38,25 @@
 
 # pcs property set stonith-enabled=false
 - name: pcs property set stonith-enabled=false
-  ansible.builtin.command: "{{ item }}"
-  with_items:
-    - "pcs property set stonith-enabled=false"
+  ansible.builtin.command: pcs property set stonith-enabled=false
 
 # pcs property set no-quorum-policy=freeze
 - name: pcs property set no-quorum-policy=freeze
-  ansible.builtin.command: "{{ item }}"
-  with_items:
-    - "pcs property set no-quorum-policy=freeze"
+  ansible.builtin.command: pcs property set no-quorum-policy=freeze
 
-#### Вместо CLVMD заменить LVMLOCKD ####
+#### Вместо lvmlockd заменить LVMLOCKD ####
 
 ## pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
 #- name: pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
-#  ansible.builtin.command: "{{ item }}"
-#  with_items:
-#    - "pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true"
+#  ansible.builtin.command: pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
 
-## pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
-#- name: pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
-#  ansible.builtin.command: "{{ item }}"
-#  with_items:
-#    - "pcs resource create clvmd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true"
+## pcs resource create lvmlockd ocf:heartbeat:clvm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+#- name: pcs resource create lvmlockd ocf:heartbeat:lvmlock op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+#  ansible.builtin.command: pcs resource create lvmlockd ocf:heartbeat:lvmlockd op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
 
-## pcs constraint order start dlm-clone then clvmd-clone
-#- name: pcs constraint order start dlm-clone then clvmd-clone
-#  ansible.builtin.command: "{{ item }}"
-#  with_items:
-#    - "pcs constraint order start dlm-clone then clvmd-clone"
+## pcs constraint order start dlm-clone then lvmlockd-clone
+#- name: pcs constraint order start dlm-clone then lvmlockd-clone
+#  ansible.builtin.command: pcs constraint order start dlm-clone then lvmlockd-clone
 
 - name: Include lvm2
   include_tasks: lvm2.yml
@@ -76,9 +66,19 @@
   include_tasks: gfs2.yml
   when: "ansible_hostname in 'pcs-01'"
 
-# pcs resource create clusterfs Filesystem device="/dev/cluster_vg/cluster_lv" directory="/mnt/gfs2" fstype="gfs2" "options=noatime" op monitor interval=10s on-fail=ignore clone interleave=true
-# pcs constraint order start clvmd-clone then clusterfs-clone
-# pcs constraint colocation add clusterfs-clone with clvmd-clone
+## pcs resource create clusterfs Filesystem device="/dev/cluster_vg/cluster_lv" directory="/mnt/gfs2" fstype="gfs2" "options=noatime" op monitor interval=10s on-fail=ignore clone interleave=true
+#- name: pcs resource create clusterfs Filesystem device="/dev/cluster_vg/cluster_lv" directory="/mnt/gfs2" fstype="gfs2" "options=noatime" op monitor interval=10s on-fail=ignore clone interleave=true
+#  ansible.builtin.command: pcs resource create clusterfs Filesystem device="/dev/cluster_vg/cluster_lv" directory="/mnt/gfs2" fstype="gfs2" "options=noatime" op monitor interval=10s on-fail=ignore clone interleave=true
+
+## pcs constraint order start lvmlockd-clone then clusterfs-clone
+#- name: pcs constraint order start lvmlockd-clone then clusterfs-clone
+#  ansible.builtin.command: pcs constraint order start lvmlockd-clone then clusterfs-clone
+
+## pcs constraint colocation add clusterfs-clone with lvmlockd-clone
+#- name: pcs constraint colocation add clusterfs-clone with lvmlockd-clone
+#  ansible.builtin.command: pcs constraint colocation add clusterfs-clone with lvmlockd-clone
+
+
 
 # pcs resource create fileio_cluster ocf:heartbeat:LVM-activate vgname=fileio_cluster_vg activation_mode=exclusive vg_access_mode=system_id --group HA-LVM
 - name: pcs resource create name_cluster ocf:heartbeat:LVM-activate vgname=cluster_vg activation_mode=exclusive vg_access_mode=system_id --group HA-LVM
@@ -89,7 +89,7 @@
 
 # pcs resource create my-fs ocf:heartbeat:Filesystem device=/dev/cluster_vg/cluster_lv directory=/mnt/lvm_cluster fstype=gfs2 --group HA-LVM
 - name: pcs property set no-quorum-policy=freeze
-  ansible.builtin.command: pcs resource create {{ item.name }} ocf:heartbeat:Filesystem device=/dev/cluster_vg/cluster_lv directory=/mnt/lvm_cluster fstype=gfs2 --group HA-LVM
+  ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:Filesystem device={{ item.device }} directory={{ item.mnt }} fstype=gfs2 --group {{ item.group }}"
   with_items: 
-    - { name: 'fileio_cluster_fs', device: '/dev/fileio_cluster_vg/file0_cluster_lv', mnt: /mnt/lvm_cluster_file0, group: 'HA-LVM-FILE0' }
-    - { name: 'block_cluster_fs', device: '/dev/block_cluster_vg/block0_cluster_lv', mnt: /mnt/lvm_cluster_block0, group: 'HA-LVM-BLOCK0' }
+    - { name: 'fileio_cluster_fs', device: '/dev/fileio_cluster_vg/file0_cluster_lv', mnt: '/mnt/lvm_cluster_file0', group: 'HA-LVM-FILE0' }
+    - { name: 'block_cluster_fs', device: '/dev/block_cluster_vg/block0_cluster_lv', mnt: '/mnt/lvm_cluster_block0', group: 'HA-LVM-BLOCK0' }

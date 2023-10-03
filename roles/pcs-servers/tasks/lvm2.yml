@@ -23,6 +23,8 @@
 
   #when: ansible_os_family == "RedHat"
 
+
+
 # pvcreate /dev/mapper/otusFileio
 # pvcreate /dev/mapper/otusBlock
 # pvcreate /dev/mapper/otusRamdisk
@@ -35,7 +37,7 @@
     vg: "{{ item.vg }}"
     pvs: "{{ item.pvs }}"
     #vg_options: "-Ay -cy" # "--autobackup y --clustered y"
-    vg_options: "-Ay --shared"
+    vg_options: "-Ay"
   with_items: 
     - { vg: 'fileio_cluster_vg', pvs: '/dev/mapper/otusFileio' }
     - { vg: 'block_cluster_vg', pvs: '/dev/mapper/otusBlock' }

@@ -51,7 +51,14 @@
     line: "{{ item.line }}"
   with_items: 
     - { regexp: "system_id_source =", line: "system_id_source = 'uname'" }
-    - { regexp: "use_lvmlockd =", line: "use_lvmlockd = 1" }
+    #- { regexp: "use_lvmlockd =", line: "use_lvmlockd = 1" }
+
+## systemctl start lvmlockd
+#- name: Start lvmlockd
+#  ansible.builtin.systemd:
+#    name: lvmlockd
+#    state: restarted
+#    enabled: true
 
 # mkdir /mnt/lvm_cluster_file0
 # mkdir /mnt/lvm_cluster_block0
@@ -64,9 +71,9 @@
     - /mnt/lvm_cluster_file0
     - /mnt/lvm_cluster_block0
 
-# dracut -f
-- name: dracut -f
-  ansible.builtin.command: dracut -f
+## dracut -f
+#- name: dracut -f
+#  ansible.builtin.command: dracut -f
 
 # systemctl reboot # each node
 
