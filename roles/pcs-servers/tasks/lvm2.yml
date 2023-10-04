@@ -37,11 +37,15 @@
     vg: "{{ item.vg }}"
     pvs: "{{ item.pvs }}"
     #vg_options: "-Ay -cy" # "--autobackup y --clustered y"
-    vg_options: "-Ay"
+    vg_options: "--shared"
   with_items: 
     - { vg: 'fileio_cluster_vg', pvs: '/dev/mapper/otusFileio' }
     - { vg: 'block_cluster_vg', pvs: '/dev/mapper/otusBlock' }
     - { vg: 'ramdisk_cluster_vg', pvs: '/dev/mapper/otusRamdisk' }
+
+- name: Wait a little
+  pause:
+    seconds: 10
 
 # lvcreate -l 100%FREE -n file0_cluster_lv fileio_cluster_vg
 - name: Create a logical volume the size of fileio
@@ -69,3 +73,7 @@
     lv: ram0_cluster_lv
     size: 100%FREE
   ignore_errors: true
+
+- name: Wait a little
+  pause:
+    seconds: 10

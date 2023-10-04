@@ -8,3 +8,7 @@
     - { name: 'fileio_cluster', lv: '/dev/fileio_cluster_vg/file0_cluster_lv' }
     - { name: 'block_cluster', lv: '/dev/block_cluster_vg/block0_cluster_lv' }
     #- { name: 'ramdisk_cluster', lv: '/dev/ramdisk_cluster_vg/ram0_cluster_lv' }
+
+- name: Wait a little
+  pause:
+    seconds: 10

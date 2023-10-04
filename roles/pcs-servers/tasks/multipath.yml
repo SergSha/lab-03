@@ -50,7 +50,7 @@
       - "{{ scsi_id_sdc.stdout }}"
 
 # cp /src/multipath.conf.j2 /etc/multipath.conf
-- name: Copy multipath conf file
+- name: Copy multipath config file
   ansible.builtin.template:
     src: multipath/multipath.conf.j2
     dest: /etc/multipath.conf

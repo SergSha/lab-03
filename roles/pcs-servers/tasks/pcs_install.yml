@@ -76,15 +76,15 @@
     state: present
     line: "{{ ip_address['pcs-03'] }} pcs-03.{{ domain }} pcs-03"
 
-- name: Set password for local hacluster user
-  ansible.builtin.user:
-    name: "hacluster"
-    password: "{{ pcs_password | string | password_hash('sha512') }}" 
-    state: present
-    update_password: always
-    create_home: yes
-  notify: "restart pcsd"
-  no_log: true
+#- name: Set password for local hacluster user
+#  ansible.builtin.user:
+#    name: "hacluster"
+#    password: "{{ pcs_password | string | password_hash('sha512') }}" 
+#    state: present
+#    update_password: always
+#    create_home: yes
+#  notify: "restart pcsd"
+#  no_log: true
 
 - name: Redhat OS
   block:
@@ -97,11 +97,29 @@
 
   when: ansible_os_family == "RedHat"
   
-- name: Enable and start Pacemaker service
+- name: Enable and start pcsd service
   ansible.builtin.systemd:
-    name: pcsd.service
+    name: pcsd
     state: restarted
     enabled: true
+
+#- name: Enable and start Corosync and Pacemaker services
+#  ansible.builtin.systemd:
+#    name: "{{ item }}"
+#    state: restarted
+#    enabled: true
+#  with_items: 
+#    - corosync
+#    - pacemaker
+
+- name: Set password for local hacluster user
+  ansible.builtin.user:
+    name: "hacluster"
+    password: "{{ pcs_password | string | password_hash('sha512') }}" 
+    state: present
+    update_password: always
+    create_home: yes
+  notify: "restart pcsd"
 
 #- name: Pause for any seconds to build app cache
 #  ansible.builtin.pause:

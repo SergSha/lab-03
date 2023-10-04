@@ -35,6 +35,7 @@
         - pcs
         - pacemaker
         - fence-agents-all
+        - corosync
         - lvm2
         - gfs2-utils
       state: present
@@ -51,14 +52,31 @@
     line: "{{ item.line }}"
   with_items: 
     - { regexp: "system_id_source =", line: "system_id_source = 'uname'" }
-    #- { regexp: "use_lvmlockd =", line: "use_lvmlockd = 1" }
+    - { regexp: "use_lvmlockd =", line: "use_lvmlockd = 1" }
 
-## systemctl start lvmlockd
-#- name: Start lvmlockd
-#  ansible.builtin.systemd:
-#    name: lvmlockd
-#    state: restarted
-#    enabled: true
+- name: Add to LVM Confifuration File (Filter)
+  lineinfile:
+    dest: "/etc/lvm/lvm.conf"
+    insertafter: 'devices {'
+    line: '{{ item }}'
+  with_items:
+    - 'global_filter=["a|/dev/mapper/otus.*|","a|/dev/mapper/mpath.*|","a|/dev/sd.*|","r|.*|"]'
+    - 'filter=["a|/dev/mapper/otus.*|","a|/dev/mapper/mpath.*|","a|/dev/sd.*|","r|.*|"]'
+
+- name: Add to LVM Confifuration File (Filter)
+  lineinfile:
+    dest: "/etc/lvm/lvm.conf"
+    insertafter: 'global {'
+    line: "{{ item }}"
+  with_items:
+    - locking_type = 1
+
+# systemctl start lvmlockd
+- name: Start lvmlockd
+  ansible.builtin.systemd:
+    name: lvmlockd
+    state: restarted
+    enabled: true
 
 # mkdir /mnt/lvm_cluster_file0
 # mkdir /mnt/lvm_cluster_block0
