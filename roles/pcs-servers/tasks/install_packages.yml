@@ -38,10 +38,11 @@
         - corosync
         - dlm
         - lvm2
+        - lvm2-lockd
         - gfs2-utils
       state: present
       #enablerepo: highavailability # for almalinux 9
-      enablerepo: ha,resilientstorage # ha for almalinux 8, resilientstorage for dlm
+      enablerepo: ha,appstream,resilientstorage # ha for almalinux 8, resilientstorage for dlm
 
   when: ansible_os_family == "RedHat"
 
@@ -52,17 +53,17 @@
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
   with_items: 
-    - { regexp: "system_id_source =", line: "system_id_source = 'uname'" }
+  #  - { regexp: "system_id_source =", line: "system_id_source = 'uname'" }
     - { regexp: "use_lvmlockd =", line: "use_lvmlockd = 1" }
 
-- name: Add to LVM Confifuration File (Filter)
-  lineinfile:
-    dest: "/etc/lvm/lvm.conf"
-    insertafter: 'devices {'
-    line: '{{ item }}'
-  with_items:
-    - 'global_filter=["a|/dev/mapper/otus.*|","a|/dev/mapper/mpath.*|","a|/dev/sd.*|","r|.*|"]'
-    - 'filter=["a|/dev/mapper/otus.*|","a|/dev/mapper/mpath.*|","a|/dev/sd.*|","r|.*|"]'
+#- name: Add to LVM Confifuration File (Filter)
+#  lineinfile:
+#    dest: "/etc/lvm/lvm.conf"
+#    insertafter: 'devices {'
+#    line: '{{ item }}'
+#  with_items:
+#    - 'global_filter=["a|/dev/mapper/otus.*|","a|/dev/mapper/mpath.*|","a|/dev/sd.*|","r|.*|"]'
+#    - 'filter=["a|/dev/mapper/otus.*|","a|/dev/mapper/mpath.*|","a|/dev/sd.*|","r|.*|"]'
 
 #- name: Add to LVM Confifuration File (Filter)
 #  lineinfile:
@@ -71,6 +72,16 @@
 #    line: "{{ item }}"
 #  with_items:
 #    - locking_type = 1
+
+# echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
+- name: echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
+  ansible.builtin.lineinfile:
+    path: /etc/lvm/lvm.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "use_devicesfile =", line: "use_devicesfile = 1" }
+  when: "ansible_hostname in ['pcs-02','pcs-03']"
 
 # systemctl start lvmlockd
 - name: Start lvmlockd

@@ -69,7 +69,7 @@
 #    sed -i "s/wwid*.*/wwid $wwid/g" /etc/multipath.conf
 
 # multipath -r
-- name: Add devices to multipath
+- name: Reload multipath
   ansible.builtin.command: multipath -r
 
 # systemctl restart multipathd

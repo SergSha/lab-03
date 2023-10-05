@@ -49,42 +49,29 @@
     seconds: 10
 
 - name: start lock manager for shared
-  ansible.builtin.command: "vgchange --lock-start {{ item.vg }}"
+  ansible.builtin.command: "vgchange --lockstart {{ item.vg }}"
   with_items: 
     - { vg: 'fileio_cluster_vg' }
     - { vg: 'block_cluster_vg' }
     - { vg: 'ramdisk_cluster_vg' }
-  when: "ansible_hostname in ['pcs-02', 'pcs-03']"
+  when: "ansible_hostname in ['pcs-02','pcs-03']"
 
 - name: Wait a little
   pause:
     seconds: 10
 
 - block:
-  # lvcreate -l 100%FREE -n file0_cluster_lv fileio_cluster_vg
+  # lvcreate -l 100%FREE -n cluster_lv cluster_vg
   - name: Create a logical volume the size of fileio
     community.general.lvol:
-      vg: fileio_cluster_vg
-      lv: file0_cluster_lv
+      vg: "{{ item.vg }}"
+      lv: "{{ item.lv }}"
       size: 100%FREE
-    ignore_errors: true
-
-  # lvcreate -l 100%FREE -n block0_cluster_lv block_cluster_vg
-  - name: Create a logical volume the size of block
-    community.general.lvol:
-      vg: block_cluster_vg
-      lv: block0_cluster_lv
-      size: 100%FREE
-    ignore_errors: true
-
-  # lvcreate -l 100%FREE -n ram0_cluster_lv ramdisk_cluster_vg
-  - name: Create a logical volume the size of ramdisk
-    community.general.lvol:
-      vg: ramdisk_cluster_vg
-      lv: ram0_cluster_lv
-      size: 100%FREE
-    ignore_errors: true
-  when: "ansible_hostname in 'pcs-01'"
+      opts: --activate sy
+    with_items: 
+    - { vg: 'fileio_cluster_vg', lv: 'file0_cluster_lv' }
+    - { vg: 'block_cluster_vg', lv: 'block0_cluster_lv' }
+    - { vg: 'ramdisk_cluster_vg', lv: 'ram0_cluster_lv' }
 
 - name: Wait a little
   pause:
