@@ -36,11 +36,12 @@
         - pacemaker
         - fence-agents-all
         - corosync
+        - dlm
         - lvm2
         - gfs2-utils
       state: present
       #enablerepo: highavailability # for almalinux 9
-      enablerepo: ha # for almalinux 8
+      enablerepo: ha,resilientstorage # ha for almalinux 8, resilientstorage for dlm
 
   when: ansible_os_family == "RedHat"
 

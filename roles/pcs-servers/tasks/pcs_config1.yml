@@ -1,0 +1,76 @@
+---
+- name: Configuring cluster (step 1)
+  ansible.builtin.command: "{{ item }}"
+  with_items:
+    - "pcs host auth pcs-01.{{ domain }} pcs-02.{{ domain }} pcs-03.{{ domain }} -u hacluster -p {{ pcs_password }}"
+  #no_log: true
+
+- name: Check for replay (/opt/pcs_config_done exists)
+  ansible.builtin.stat:
+    path: /opt/pcs_config_done
+  register: pcs_config_done
+
+- name: Configuring cluster (step 2)
+  ansible.builtin.command: "{{ item }}"
+  with_items:
+    - "pcs cluster setup {{ cluster_name }} pcs-01.{{ domain }} pcs-02.{{ domain }} pcs-03.{{ domain }}"
+  when:
+    - pcs_config_done.stat.exists != True
+
+# touch /opt/pcs_config_done
+- name: Set replay protection (/opt/pcs_config_done)
+  ansible.builtin.file:
+    path: /opt/pcs_config_done
+    state: touch
+    owner: root
+    group: root
+    mode: '0744'
+  when:
+    - pcs_config_done.stat.exists != True
+
+- name: Configuring cluster (step 3)
+  ansible.builtin.command: "{{ item }}"
+  with_items:
+    - "pcs cluster enable --all"
+    - "pcs cluster start --all"
+
+- name: Wait a little
+  pause:
+    seconds: 10
+
+# https://www.golinuxcloud.com/setup-high-availability-cluster-centos-8/
+
+# pcs property set stonith-enabled=false
+- name: pcs property set stonith-enabled=false
+  ansible.builtin.command: pcs property set stonith-enabled=false
+
+# pcs property set no-quorum-policy=freeze
+- name: Set [no-quorum-policy=freeze] on GFS2
+  ansible.builtin.command: pcs property set no-quorum-policy=freeze
+
+#### Вместо lvmlockd заменить LVMLOCKD ####
+
+# pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+- name: pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+  ansible.builtin.command: pcs resource create dlm systemd:dlm op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+
+## pcs resource clone locking interleave=true
+#- name: create clone of [locking] to activate it on all nodes in cluster
+#  ansible.builtin.command: pcs resource clone locking interleave=true
+
+## pcs resource create lvmlockdd ocf:heartbeat:lvmlockd op monitor interval=30s on-fail=fence --group locking
+#- name: create lvmlockd resource
+#  ansible.builtin.command: pcs resource create lvmlockdd ocf:heartbeat:lvmlockd op monitor interval=30s on-fail=fence --group locking
+
+
+# pcs resource create lvmlockd ocf:heartbeat:lvmlockd op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+- name: pcs resource create lvmlockd ocf:heartbeat:lvmlockd op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+  ansible.builtin.command: pcs resource create lvmlockd ocf:heartbeat:lvmlockd op monitor interval=30s on-fail=ignore clone interleave=true ordered=true
+
+# pcs constraint order start dlm-clone then lvmlockd-clone
+- name: pcs constraint order start dlm-clone then lvmlockd-clone
+  ansible.builtin.command: pcs constraint order start dlm-clone then lvmlockd-clone
+
+- name: Wait a little
+  pause:
+    seconds: 30

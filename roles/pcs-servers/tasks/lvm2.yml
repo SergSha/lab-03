@@ -37,42 +37,57 @@
     vg: "{{ item.vg }}"
     pvs: "{{ item.pvs }}"
     #vg_options: "-Ay -cy" # "--autobackup y --clustered y"
-    vg_options: "--shared"
+    vg_options: "--autobackup y --shared"
   with_items: 
     - { vg: 'fileio_cluster_vg', pvs: '/dev/mapper/otusFileio' }
     - { vg: 'block_cluster_vg', pvs: '/dev/mapper/otusBlock' }
     - { vg: 'ramdisk_cluster_vg', pvs: '/dev/mapper/otusRamdisk' }
+  when: "ansible_hostname in 'pcs-01'"
 
 - name: Wait a little
   pause:
     seconds: 10
 
-# lvcreate -l 100%FREE -n file0_cluster_lv fileio_cluster_vg
-- name: Create a logical volume the size of fileio
-  community.general.lvol:
-    #pvs: /dev/mapper/otusFileio
-    vg: fileio_cluster_vg
-    lv: file0_cluster_lv
-    size: 100%FREE
-  ignore_errors: true
+- name: start lock manager for shared
+  ansible.builtin.command: "vgchange --lock-start {{ item.vg }}"
+  with_items: 
+    - { vg: 'fileio_cluster_vg' }
+    - { vg: 'block_cluster_vg' }
+    - { vg: 'ramdisk_cluster_vg' }
+  when: "ansible_hostname in ['pcs-02', 'pcs-03']"
 
-# lvcreate -l 100%FREE -n block0_cluster_lv block_cluster_vg
-- name: Create a logical volume the size of block
-  community.general.lvol:
-    #pvs: /dev/mapper/otusBlock
-    vg: block_cluster_vg
-    lv: block0_cluster_lv
-    size: 100%FREE
-  ignore_errors: true
+- name: Wait a little
+  pause:
+    seconds: 10
 
-# lvcreate -l 100%FREE -n ram0_cluster_lv ramdisk_cluster_vg
-- name: Create a logical volume the size of ramdisk
-  community.general.lvol:
-    #pvs: /dev/mapper/otusRamdisk
-    vg: ramdisk_cluster_vg
-    lv: ram0_cluster_lv
-    size: 100%FREE
-  ignore_errors: true
+- block:
+  # lvcreate -l 100%FREE -n file0_cluster_lv fileio_cluster_vg
+  - name: Create a logical volume the size of fileio
+    community.general.lvol:
+      #pvs: /dev/mapper/otusFileio
+      vg: fileio_cluster_vg
+      lv: file0_cluster_lv
+      size: 100%FREE
+    ignore_errors: true
+
+  # lvcreate -l 100%FREE -n block0_cluster_lv block_cluster_vg
+  - name: Create a logical volume the size of block
+    community.general.lvol:
+      #pvs: /dev/mapper/otusBlock
+      vg: block_cluster_vg
+      lv: block0_cluster_lv
+      size: 100%FREE
+    ignore_errors: true
+
+  # lvcreate -l 100%FREE -n ram0_cluster_lv ramdisk_cluster_vg
+  - name: Create a logical volume the size of ramdisk
+    community.general.lvol:
+      #pvs: /dev/mapper/otusRamdisk
+      vg: ramdisk_cluster_vg
+      lv: ram0_cluster_lv
+      size: 100%FREE
+    ignore_errors: true
+  when: "ansible_hostname in 'pcs-01'"
 
 - name: Wait a little
   pause:

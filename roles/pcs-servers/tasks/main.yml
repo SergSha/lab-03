@@ -15,13 +15,16 @@
   include_tasks: pcs_install.yml
 
 - name: Include configure pcs service
-  include_tasks: pcs_config.yml
+  include_tasks: pcs_config1.yml
   when: "ansible_hostname in 'pcs-01'"
 
-#- name: Include lvm2
-#  include_tasks: lvm2.yml
-#  when: "ansible_hostname in 'pcs-01'"
+- name: Include lvm2
+  include_tasks: lvm2.yml
 
-#- name: Include gfs2
-#  include_tasks: gfs2.yml
-#  when: "ansible_hostname in 'pcs-01'"
+- name: Include gfs2
+  include_tasks: gfs2.yml
+  when: "ansible_hostname in 'pcs-01'"
+
+- name: Include configure pcs service
+  include_tasks: pcs_config2.yml
+  when: "ansible_hostname in 'pcs-01'"
