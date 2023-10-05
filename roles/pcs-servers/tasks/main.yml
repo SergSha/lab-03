@@ -25,6 +25,6 @@
   include_tasks: gfs2.yml
   when: "ansible_hostname in 'pcs-01'"
 
-- name: Include configure pcs service
-  include_tasks: pcs_config2.yml
-  when: "ansible_hostname in 'pcs-01'"
+#- name: Include configure pcs service
+#  include_tasks: pcs_config2.yml
+#  when: "ansible_hostname in 'pcs-01'"

@@ -12,7 +12,10 @@
 
 # pcs constraint order start lvmlockd-clone then clusterfs-clone
 - name: pcs constraint order start lvmlockd-clone then fileio_cluster_fs-clone
-  ansible.builtin.command: pcs constraint order start lvmlockd-clone then fileio_cluster_fs-clone
+  ansible.builtin.command: "pcs constraint order start lvmlockd-clone then {{ item.name }}-clone"
+  with_items: 
+    - { name: 'fileio_cluster_fs' }
+    - { name: 'block_cluster_fs' }
 
 # pcs constraint colocation add clusterfs-clone with clvmd-clone
 - name: pcs constraint colocation add clusterfs-clone with lvmlockd-clone

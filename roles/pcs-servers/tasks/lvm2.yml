@@ -64,7 +64,6 @@
   # lvcreate -l 100%FREE -n file0_cluster_lv fileio_cluster_vg
   - name: Create a logical volume the size of fileio
     community.general.lvol:
-      #pvs: /dev/mapper/otusFileio
       vg: fileio_cluster_vg
       lv: file0_cluster_lv
       size: 100%FREE
@@ -73,7 +72,6 @@
   # lvcreate -l 100%FREE -n block0_cluster_lv block_cluster_vg
   - name: Create a logical volume the size of block
     community.general.lvol:
-      #pvs: /dev/mapper/otusBlock
       vg: block_cluster_vg
       lv: block0_cluster_lv
       size: 100%FREE
@@ -82,7 +80,6 @@
   # lvcreate -l 100%FREE -n ram0_cluster_lv ramdisk_cluster_vg
   - name: Create a logical volume the size of ramdisk
     community.general.lvol:
-      #pvs: /dev/mapper/otusRamdisk
       vg: ramdisk_cluster_vg
       lv: ram0_cluster_lv
       size: 100%FREE
