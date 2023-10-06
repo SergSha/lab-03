@@ -1,29 +1,24 @@
 ---
-#- name: Debian OS
-#  block:
 
-#  - name: Install additional packages for lvm2
-#    ansible.builtin.apt:
-#      name:
-#        - clvm
-#      state: present
+- name: pvcreate /dev/mapper/pv
+  ansible.builtin.command: "pvcreate {{ item.pv }}"
+  with_items: 
+    - { pv: '/dev/mapper/otusFileio' }
+    - { pv: '/dev/mapper/otusBlock' }
+    - { pv: '/dev/mapper/otusRamdisk' }
+  when: "ansible_hostname in 'pcs-01'"
 
-#  when: ansible_os_family == "Debian"
+- name: Wait a little
+  pause:
+    seconds: 10
 
-#- name: Redhat OS
-#  block:
-
-  ## dnf install iscsi-initiator-utils gfs2-utils lvm2-cluster
-  #- name: Install additional packages for lvm2
-  #  ansible.builtin.dnf:
-  #    name:
-  #      #- lvm2-cluster
-  #      - lvm2
-  #    state: present
-
-  #when: ansible_os_family == "RedHat"
-
-
+- name: vgcreate --shared cluster_vg /dev/mapper/pv
+  ansible.builtin.command: "vgcreate --shared {{ item.vg }} {{ item.pv }}"
+  with_items: 
+    - { vg: 'fileio_cluster_vg', pv: '/dev/mapper/otusFileio' }
+    - { vg: 'block_cluster_vg', pv: '/dev/mapper/otusBlock' }
+    - { vg: 'ramdisk_cluster_vg', pv: '/dev/mapper/otusRamdisk' }
+  when: "ansible_hostname in 'pcs-01'"
 
 # pvcreate /dev/mapper/otusFileio
 # pvcreate /dev/mapper/otusBlock
@@ -31,22 +26,31 @@
 # vgcreate -Ay -cy fileio_cluster_vg /dev/mapper/otusFileio
 # vgcreate -Ay -cy block_cluster_vg /dev/mapper/otusBlock
 # vgcreate -Ay -cy ramdisk_cluster_vg /dev/mapper/otusRamdisk
-- name: Create a volume groups
-  community.general.lvg:
-    #state: present
-    vg: "{{ item.vg }}"
-    pvs: "{{ item.pvs }}"
-    #vg_options: "-Ay -cy" # "--autobackup y --clustered y"
-    vg_options: "--autobackup y --shared"
-  with_items: 
-    - { vg: 'fileio_cluster_vg', pvs: '/dev/mapper/otusFileio' }
-    - { vg: 'block_cluster_vg', pvs: '/dev/mapper/otusBlock' }
-    - { vg: 'ramdisk_cluster_vg', pvs: '/dev/mapper/otusRamdisk' }
-  when: "ansible_hostname in 'pcs-01'"
+#- name: Create a volume groups
+#  community.general.lvg:
+#    #state: present
+#    vg: "{{ item.vg }}"
+#    pvs: "{{ item.pvs }}"
+#    #vg_options: "-Ay -cy" # "--autobackup y --clustered y"
+#    vg_options: "--shared"
+#  with_items: 
+#    - { vg: 'fileio_cluster_vg', pvs: '/dev/mapper/otusFileio' }
+#    - { vg: 'block_cluster_vg', pvs: '/dev/mapper/otusBlock' }
+#    - { vg: 'ramdisk_cluster_vg', pvs: '/dev/mapper/otusRamdisk' }
+#  when: "ansible_hostname in 'pcs-01'"
 
 - name: Wait a little
   pause:
     seconds: 10
+
+## lvmdevices --adddev /dev/vdb
+#- name: add lvm devices
+#  ansible.builtin.command: "vmdevices --adddev {{ item.device }}"
+#  with_items: 
+#    - { device: '/dev/mapper/otusFileio' }
+#    - { device: '/dev/mapper/otusBlock' }
+#    - { device: '/dev/mapper/otusRamdisk' }
+#  when: "ansible_hostname in ['pcs-02','pcs-03']"
 
 - name: start lock manager for shared
   ansible.builtin.command: "vgchange --lockstart {{ item.vg }}"
@@ -54,7 +58,7 @@
     - { vg: 'fileio_cluster_vg' }
     - { vg: 'block_cluster_vg' }
     - { vg: 'ramdisk_cluster_vg' }
-  when: "ansible_hostname in ['pcs-02','pcs-03']"
+  #when: "ansible_hostname in ['pcs-02','pcs-03']"
 
 - name: Wait a little
   pause:

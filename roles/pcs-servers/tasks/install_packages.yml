@@ -47,7 +47,7 @@
   when: ansible_os_family == "RedHat"
 
 # echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
-- name: echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
+- name: echo 'use_lvmlockd = 1' >> /etc/lvm/lvm.conf
   ansible.builtin.lineinfile:
     path: /etc/lvm/lvm.conf
     regexp: "{{ item.regexp }}"
@@ -65,16 +65,16 @@
 #    - 'global_filter=["a|/dev/mapper/otus.*|","a|/dev/mapper/mpath.*|","a|/dev/sd.*|","r|.*|"]'
 #    - 'filter=["a|/dev/mapper/otus.*|","a|/dev/mapper/mpath.*|","a|/dev/sd.*|","r|.*|"]'
 
-#- name: Add to LVM Confifuration File (Filter)
-#  lineinfile:
-#    dest: "/etc/lvm/lvm.conf"
-#    insertafter: 'global {'
-#    line: "{{ item }}"
-#  with_items:
-#    - locking_type = 1
+- name: Add to LVM Confifuration File (Filter)
+  lineinfile:
+    dest: "/etc/lvm/lvm.conf"
+    insertafter: 'global {'
+    line: "{{ item }}"
+  with_items:
+    - locking_type = 1
 
 # echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
-- name: echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
+- name: echo 'use_devicesfile = 1' >> /etc/lvm/lvm.conf
   ansible.builtin.lineinfile:
     path: /etc/lvm/lvm.conf
     regexp: "{{ item.regexp }}"
