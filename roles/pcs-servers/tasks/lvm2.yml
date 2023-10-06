@@ -60,18 +60,18 @@
   pause:
     seconds: 10
 
-- block:
-  # lvcreate -l 100%FREE -n cluster_lv cluster_vg
-  - name: Create a logical volume the size of fileio
-    community.general.lvol:
-      vg: "{{ item.vg }}"
-      lv: "{{ item.lv }}"
-      size: 100%FREE
-      opts: --activate sy
-    with_items: 
-    - { vg: 'fileio_cluster_vg', lv: 'file0_cluster_lv' }
-    - { vg: 'block_cluster_vg', lv: 'block0_cluster_lv' }
-    - { vg: 'ramdisk_cluster_vg', lv: 'ram0_cluster_lv' }
+# lvcreate -l 100%FREE -n cluster_lv cluster_vg
+- name: Create a logical volume the size of fileio
+  community.general.lvol:
+    vg: "{{ item.vg }}"
+    lv: "{{ item.lv }}"
+    size: "{{ item.size }}"
+    opts: --activate sy
+  with_items: 
+    - { vg: 'fileio_cluster_vg', lv: 'file0_cluster_lv', size: '100%FREE' }
+    - { vg: 'block_cluster_vg', lv: 'block0_cluster_lv', size: '100%FREE' }
+    - { vg: 'ramdisk_cluster_vg', lv: 'ram0_cluster_lv', size: '100%FREE' }
+  when: "ansible_hostname in 'pcs-01'"
 
 - name: Wait a little
   pause:
