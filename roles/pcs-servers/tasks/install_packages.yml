@@ -53,7 +53,7 @@
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
   with_items: 
-  #  - { regexp: "system_id_source =", line: "system_id_source = 'uname'" }
+    - { regexp: "system_id_source =", line: "system_id_source = 'uname'" }
     - { regexp: "use_lvmlockd =", line: "use_lvmlockd = 1" }
 
 #- name: Add to LVM Confifuration File (Filter)
@@ -65,30 +65,33 @@
 #    - 'global_filter=["a|/dev/mapper/otus.*|","a|/dev/mapper/mpath.*|","a|/dev/sd.*|","r|.*|"]'
 #    - 'filter=["a|/dev/mapper/otus.*|","a|/dev/mapper/mpath.*|","a|/dev/sd.*|","r|.*|"]'
 
-- name: Add to LVM Confifuration File (Filter)
-  lineinfile:
-    dest: "/etc/lvm/lvm.conf"
-    insertafter: 'global {'
-    line: "{{ item }}"
-  with_items:
-    - locking_type = 1
+#- name: Add to LVM Confifuration File (Filter)
+#  lineinfile:
+#    dest: "/etc/lvm/lvm.conf"
+#    insertafter: 'global {'
+#    line: "{{ item }}"
+#  with_items:
+#    - locking_type = 1
 
-# echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
-- name: echo 'use_devicesfile = 1' >> /etc/lvm/lvm.conf
-  ansible.builtin.lineinfile:
-    path: /etc/lvm/lvm.conf
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-  with_items:
-    - { regexp: "use_devicesfile =", line: "use_devicesfile = 1" }
-  when: "ansible_hostname in ['pcs-02','pcs-03']"
+## echo 'system_id_source = "uname"' >> /etc/lvm/lvm.conf
+#- name: echo 'use_devicesfile = 1' >> /etc/lvm/lvm.conf
+#  ansible.builtin.lineinfile:
+#    path: /etc/lvm/lvm.conf
+#    regexp: "{{ item.regexp }}"
+#    line: "{{ item.line }}"
+#  with_items:
+#    - { regexp: "use_devicesfile =", line: "use_devicesfile = 1" }
+#  when: "ansible_hostname in ['pcs-02','pcs-03']"
 
 # systemctl start lvmlockd
 - name: Start lvmlockd
-  ansible.builtin.systemd:
-    name: lvmlockd
+  ansible.builtin.service:
+    name: "{{ item }}"
     state: restarted
     enabled: true
+  with_items: 
+    - lvmlockd
+    #- dlm
 
 # mkdir /mnt/lvm_cluster_file0
 # mkdir /mnt/lvm_cluster_block0

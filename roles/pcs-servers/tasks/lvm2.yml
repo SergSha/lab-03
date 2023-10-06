@@ -1,12 +1,12 @@
 ---
 
-- name: pvcreate /dev/mapper/pv
-  ansible.builtin.command: "pvcreate {{ item.pv }}"
-  with_items: 
-    - { pv: '/dev/mapper/otusFileio' }
-    - { pv: '/dev/mapper/otusBlock' }
-    - { pv: '/dev/mapper/otusRamdisk' }
-  when: "ansible_hostname in 'pcs-01'"
+#- name: pvcreate /dev/mapper/pv
+#  ansible.builtin.command: "pvcreate {{ item.pv }}"
+#  with_items: 
+#    - { pv: '/dev/mapper/otusFileio' }
+#    - { pv: '/dev/mapper/otusBlock' }
+#    - { pv: '/dev/mapper/otusRamdisk' }
+#  when: "ansible_hostname in 'pcs-01'"
 
 - name: Wait a little
   pause:
@@ -58,24 +58,32 @@
     - { vg: 'fileio_cluster_vg' }
     - { vg: 'block_cluster_vg' }
     - { vg: 'ramdisk_cluster_vg' }
-  #when: "ansible_hostname in ['pcs-02','pcs-03']"
+  when: "ansible_hostname in ['pcs-02','pcs-03']"
 
 - name: Wait a little
   pause:
     seconds: 10
 
-# lvcreate -l 100%FREE -n cluster_lv cluster_vg
-- name: Create a logical volume the size of fileio
-  community.general.lvol:
-    vg: "{{ item.vg }}"
-    lv: "{{ item.lv }}"
-    size: "{{ item.size }}"
-    opts: --activate sy
+- name: start lock manager for shared
+  ansible.builtin.command: "lvcreate --activate sy -l 100%FREE -n {{ item.lv }} {{ item.vg }}"
   with_items: 
-    - { vg: 'fileio_cluster_vg', lv: 'file0_cluster_lv', size: '100%FREE' }
-    - { vg: 'block_cluster_vg', lv: 'block0_cluster_lv', size: '100%FREE' }
-    - { vg: 'ramdisk_cluster_vg', lv: 'ram0_cluster_lv', size: '100%FREE' }
+    - { vg: 'fileio_cluster_vg', lv: 'file0_cluster_lv' }
+    - { vg: 'block_cluster_vg', lv: 'block0_cluster_lv' }
+    - { vg: 'ramdisk_cluster_vg', lv: 'ram0_cluster_lv' }
   when: "ansible_hostname in 'pcs-01'"
+
+## lvcreate -l 100%FREE -n cluster_lv cluster_vg
+#- name: Create a logical volume the size of fileio
+#  community.general.lvol:
+#    vg: "{{ item.vg }}"
+#    lv: "{{ item.lv }}"
+#    size: "{{ item.size }}"
+#    opts: --activate sy
+#  with_items: 
+#    - { vg: 'fileio_cluster_vg', lv: 'file0_cluster_lv', size: '100%FREE' }
+#    - { vg: 'block_cluster_vg', lv: 'block0_cluster_lv', size: '100%FREE' }
+#    - { vg: 'ramdisk_cluster_vg', lv: 'ram0_cluster_lv', size: '100%FREE' }
+#  when: "ansible_hostname in 'pcs-01'"
 
 - name: Wait a little
   pause:
