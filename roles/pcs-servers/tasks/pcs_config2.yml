@@ -63,8 +63,8 @@
 
 # pcs resource create shared_fs ocf:heartbeat:Filesystem device='/dev/vg_gfs2/lv_gfs2' directory='/home/gfs2-share' fstype='gfs2' options=noatime op monitor interval=10s on-fail=fence --group shared_vg
 - name: create Filesystem resource -------------
-# ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:Filesystem device={{ item.device }} directory={{ item.mnt }} fstype=gfs2 'options=noatime' op monitor interval=10s on-fail=ignore clone interleave=true"
-  ansible.builtin.command: "pcs resource create {{ item.name }} --group {{ item.group }} ocf:heartbeat:Filesystem device='{{ item.device }}' directory='{{ item.mnt }}' fstype='gfs2' options=noatime op monitor interval=10s on-fail=ignore"
+  ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:Filesystem device={{ item.device }} directory={{ item.mnt }} fstype=gfs2 'options=noatime' op monitor interval=10s on-fail=ignore clone interleave=true"
+  #ansible.builtin.command: "pcs resource create {{ item.name }} --group {{ item.group }} ocf:heartbeat:Filesystem device='{{ item.device }}' directory='{{ item.mnt }}' fstype='gfs2' options=noatime op monitor interval=10s on-fail=ignore"
   with_items: 
     - { name: 'fileio_cluster_fs', group: 'fileio_cluster_vg', device: '/dev/fileio_cluster_vg/file0_cluster_lv', mnt: '/mnt/lvm_cluster_file0' }
     - { name: 'block_cluster_fs', group: 'block_cluster_vg', device: '/dev/block_cluster_vg/block0_cluster_lv', mnt: '/mnt/lvm_cluster_block0' }

@@ -1,28 +1,4 @@
 ---
-#- name: Debian OS
-#  block:
-
-  ## apt install device-mapper-multipath -y
-  #- name: Install additional packages for multipath
-  #  ansible.builtin.apt:
-  #    name:
-  #      - device-mapper-multipath
-  #    state: present
-
-  #when: ansible_os_family == "Debian"
-
-#- name: Redhat OS
-#  block:
-
-  ## dnf install device-mapper-multipath -y
-  #- name: Install additional packages for multipath
-  #  ansible.builtin.dnf:
-  #    name:
-  #      - device-mapper-multipath
-  #    state: present
-
-  #when: ansible_os_family == "RedHat"
-
 # mpathconf --enable --with_multipathd y
 - name: Setup multipath in PCS Servers
   ansible.builtin.command: mpathconf --enable --with_multipathd y
@@ -62,11 +38,6 @@
     - /dev/sda
     - /dev/sdb
     - /dev/sdc
-
-#- name: Setup multipath in PCS Servers
-#  shell: |
-#    wwid=`/usr/lib/udev/scsi_id --whitelisted --replace-whitespace --device=/dev/sda`
-#    sed -i "s/wwid*.*/wwid $wwid/g" /etc/multipath.conf
 
 # multipath -r
 - name: Reload multipath
