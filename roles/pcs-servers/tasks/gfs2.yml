@@ -10,4 +10,4 @@
 
 - name: Wait a little
   pause:
-    seconds: 30
+    seconds: 5

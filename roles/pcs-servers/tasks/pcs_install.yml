@@ -1,53 +1,4 @@
 ---
-#- name: Debian OS
-#  block:
-  
-#  when: ansible_os_family == "Debian"
-
-#- name: Redhat OS
-#  block:
-
-  # dnf install epel-release -y
-  #- name: Install epel-release
-  #  ansible.builtin.dnf:
-  #    name:
-  #      - epel-release
-  #    state: present
-
-  #- name: Install additional packages for pcs cluster
-  #  ansible.builtin.dnf:
-  #    name:
-  #      - python3-cryptography
-  #      - setools-console
-  #      - libsemanage-python3
-  #      - policycoreutils-python3
-  #    state: present
-
-  ## dnf config-manager --set-enabled highavailability
-  #- name: Add repository AlmaLinux $releasever - HighAvailability
-  #  ansible.builtin.yum_repository:
-  #    name: highavailability
-  #    description: AlmaLinux - HighAvailability repo
-  #    #file: almalinux-highavailability
-  #    #baseurl: https://repo.almalinux.org/almalinux/$releasever/HighAvailability/$basearch/os/
-  #    mirrorlist: https://mirrors.almalinux.org/mirrorlist/$releasever/highavailability
-  #    enabled: yes
-
-  ## dnf config-manager --set-enabled HighAvailability # for AlmaLinux 9
-  ## dnf config-manager --set-enabled ha # for AlmaLinux 8
-  ## dnf install pcs pacemaker fence-agents-all -y
-  #- name: Install Pacemaker
-  #  ansible.builtin.dnf:
-  #    name:
-  #      - pcs
-  #      - pacemaker
-  #      - fence-agents-all
-  #    #enablerepo: highavailability # for AlmaLinux 9
-  #    enablerepo: ha # for AlmaLinux 8
-  #    state: present
-  
-  #when: ansible_os_family == "RedHat"
-  
 - name: Set hostname
   ansible.builtin.hostname:
     name: "{{ ansible_hostname }}.{{ domain }}"
@@ -76,16 +27,6 @@
     state: present
     line: "{{ ip_address['pcs-03'] }} pcs-03.{{ domain }} pcs-03"
 
-#- name: Set password for local hacluster user
-#  ansible.builtin.user:
-#    name: "hacluster"
-#    password: "{{ pcs_password | string | password_hash('sha512') }}" 
-#    state: present
-#    update_password: always
-#    create_home: yes
-#  notify: "restart pcsd"
-#  no_log: true
-
 - name: Redhat OS
   block:
 
@@ -103,15 +44,6 @@
     state: restarted
     enabled: true
 
-#- name: Enable and start Corosync and Pacemaker services
-#  ansible.builtin.systemd:
-#    name: "{{ item }}"
-#    state: restarted
-#    enabled: true
-#  with_items: 
-#    - corosync
-#    - pacemaker
-
 - name: Set password for local hacluster user
   ansible.builtin.user:
     name: "hacluster"
@@ -120,7 +52,3 @@
     update_password: always
     create_home: yes
   notify: "restart pcsd"
-
-#- name: Pause for any seconds to build app cache
-#  ansible.builtin.pause:
-#    seconds: 20

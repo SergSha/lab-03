@@ -39,15 +39,15 @@
   ansible.builtin.command: iscsiadm -m node -T iqn.2023-09.local.otus:storage.target00
   register: result_iscsi_connect
 
-# lsscsi
-- name: Confirm that you are logged into your iSCSI Target Server
-  ansible.builtin.command: lsscsi
-  register: list_scsi_devices
+## lsscsi
+#- name: Confirm that you are logged into your iSCSI Target Server
+#  ansible.builtin.command: lsscsi
+#  register: list_scsi_devices
 
-# echo $result_iscsi_session.stdout_lines $result_iscsi_connect.stdout_lines $list_scsi_devices
-- name: Info result iscsi session
-  ansible.builtin.debug:
-    msg:
-      - "{{ result_iscsi_session.stdout_lines }}"
-      - "{{ result_iscsi_connect.stdout_lines }}"
-      - "{{ list_scsi_devices.stdout_lines }}"
+## echo $result_iscsi_session.stdout_lines $result_iscsi_connect.stdout_lines $list_scsi_devices
+#- name: Info result iscsi session
+#  ansible.builtin.debug:
+#    msg:
+#      - "{{ result_iscsi_session.stdout_lines }}"
+#      - "{{ result_iscsi_connect.stdout_lines }}"
+#      - "{{ list_scsi_devices.stdout_lines }}"

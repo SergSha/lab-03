@@ -1,30 +1,5 @@
 ---
-#- name: pvcreate /dev/mapper/pv
-#  ansible.builtin.command: "pvcreate {{ item.pv }}"
-#  with_items: 
-#    - { pv: '/dev/mapper/otusFileio' }
-#    - { pv: '/dev/mapper/otusBlock' }
-#    - { pv: '/dev/mapper/otusRamdisk' }
-#  when: "ansible_hostname in 'pcs-01'"
-
-#- name: Wait a little
-#  pause:
-#    seconds: 10
-
-#- name: vgcreate --shared cluster_vg /dev/mapper/pv
-#  ansible.builtin.command: "vgcreate --shared {{ item.vg }} {{ item.pv }}"
-#  with_items: 
-#    - { vg: 'fileio_cluster_vg', pv: '/dev/mapper/otusFileio' }
-#    - { vg: 'block_cluster_vg', pv: '/dev/mapper/otusBlock' }
-#    - { vg: 'ramdisk_cluster_vg', pv: '/dev/mapper/otusRamdisk' }
-#  when: "ansible_hostname in 'pcs-01'"
-
-# pvcreate /dev/mapper/otusFileio
-# pvcreate /dev/mapper/otusBlock
-# pvcreate /dev/mapper/otusRamdisk
-# vgcreate -Ay -cy fileio_cluster_vg /dev/mapper/otusFileio
-# vgcreate -Ay -cy block_cluster_vg /dev/mapper/otusBlock
-# vgcreate -Ay -cy ramdisk_cluster_vg /dev/mapper/otusRamdisk
+# vgcreate --shared cluster_vg /dev/mapper/device
 - name: Create a volume groups
   community.general.lvg:
     #state: present
@@ -40,17 +15,9 @@
 
 - name: Wait a little
   pause:
-    seconds: 30
+    seconds: 5
 
-## lvmdevices --adddev /dev/vdb
-#- name: add lvm devices
-#  ansible.builtin.command: "vmdevices --adddev {{ item.device }}"
-#  with_items: 
-#    - { device: '/dev/mapper/otusFileio' }
-#    - { device: '/dev/mapper/otusBlock' }
-#    - { device: '/dev/mapper/otusRamdisk' }
-#  when: "ansible_hostname in ['pcs-02','pcs-03']"
-
+# vgchange --lockstart cluster_vg
 - name: start lock manager for shared
   ansible.builtin.command: "vgchange --lockstart {{ item.vg }}"
   with_items: 
@@ -59,26 +26,13 @@
     - { vg: 'ramdisk_cluster_vg' }
   when: "ansible_hostname in ['pcs-02','pcs-03']"
 
-- name: Wait a little
-  pause:
-    seconds: 30
-
-#- name: start lock manager for shared
-#  #ansible.builtin.command: "lvcreate --activate sy -l 100%FREE -n {{ item.lv }} {{ item.vg }}"
-#  ansible.builtin.command: "lvcreate -l 100%FREE -n {{ item.lv }} {{ item.vg }}"
-#  with_items: 
-#    - { vg: 'fileio_cluster_vg', lv: 'file0_cluster_lv' }
-#    - { vg: 'block_cluster_vg', lv: 'block0_cluster_lv' }
-#    - { vg: 'ramdisk_cluster_vg', lv: 'ram0_cluster_lv' }
-#  when: "ansible_hostname in 'pcs-01'"
-
-# lvcreate -l 100%FREE -n cluster_lv cluster_vg
+# lvcreate --activate sy -l 100%FREE -n cluster_lv cluster_vg
 - name: Create a logical volume the size of fileio
   community.general.lvol:
     vg: "{{ item.vg }}"
     lv: "{{ item.lv }}"
     size: "{{ item.size }}"
-    #opts: --activate sy
+    opts: --activate sy
   with_items: 
     - { vg: 'fileio_cluster_vg', lv: 'file0_cluster_lv', size: '100%FREE' }
     - { vg: 'block_cluster_vg', lv: 'block0_cluster_lv', size: '100%FREE' }
@@ -87,4 +41,4 @@
 
 - name: Wait a little
   pause:
-    seconds: 30
+    seconds: 5

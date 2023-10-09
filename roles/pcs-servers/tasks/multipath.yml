@@ -18,12 +18,12 @@
   ansible.builtin.command: /usr/lib/udev/scsi_id --whitelisted --replace-whitespace --device=/dev/sdc
   register: scsi_id_sdc
 
-- name: Info scsi_id all iscsi devices
-  ansible.builtin.debug:
-    msg:
-      - "{{ scsi_id_sda.stdout }}"
-      - "{{ scsi_id_sdb.stdout }}"
-      - "{{ scsi_id_sdc.stdout }}"
+#- name: Info scsi_id all iscsi devices
+#  ansible.builtin.debug:
+#    msg:
+#      - "{{ scsi_id_sda.stdout }}"
+#      - "{{ scsi_id_sdb.stdout }}"
+#      - "{{ scsi_id_sdc.stdout }}"
 
 # cp /src/multipath.conf.j2 /etc/multipath.conf
 - name: Copy multipath config file

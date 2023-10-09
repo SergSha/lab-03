@@ -1,82 +1,32 @@
 ---
-## pcs resource create clusterfs Filesystem device="/dev/cluster_vg/cluster_lv" directory="/mnt/gfs2" fstype="gfs2" "options=noatime" op monitor interval=10s on-fail=ignore clone interleave=true
-#- name: pcs resource create cluster_fs Filesystem device="/dev/cluster_vg/cluster_lv" directory="/mnt/gfs2" fstype="gfs2" "options=noatime" op monitor interval=10s on-fail=ignore clone interleave=true
-#  #ansible.builtin.command: "pcs resource create {{ item.name }} Filesystem device={{ item.device }} directory={{ item.mnt }} fstype='gfs2' 'options=noatime' op monitor interval=30s on-fail=ignore clone interleave=true"
-#  ansible.builtin.command: pcs resource create {{ item.name }} --group {{ item.group }} ocf:heartbeat:LVM-activate lvname={{ item.lv }} vgname={{ item.vg }} activation_mode=shared vg_access_mode=lvmlockd
-#  with_items: 
-#    #- { name: 'fileio_cluster_fs', device: '/dev/fileio_cluster_vg/file0_cluster_lv', mnt: '/mnt/lvm_cluster_file0' }
-#    #- { name: 'block_cluster_fs', device: '/dev/block_cluster_vg/block0_cluster_lv', mnt: '/mnt/lvm_cluster_block0' }
-#    - { name: 'fileio_cluster_fs', group: 'fileio_cluster_vg', lv: 'file0_cluster_lv', vg: 'fileio_cluster_vg' }
-#    - { name: 'block_cluster_fs', group: 'block_cluster_vg', lv: 'block0_cluster_lv', vg: 'block_cluster_vg' }
-
-#- name: Wait a little
-#  pause:
-#    seconds: 10
-
-## pcs constraint order start lvmlockd-clone then clusterfs-clone +++++++++
-#- name: pcs constraint order start lvmlockd-clone then cluster_fs-clone
-#  ansible.builtin.command: "pcs constraint order start lvmlockd-clone then {{ item.name }}-clone"
-#  with_items: 
-#    - { name: 'fileio_cluster_fs' }
-#    - { name: 'block_cluster_fs' }
-
-## pcs constraint colocation add clusterfs-clone with clvmd-clone ++++++++
-#- name: pcs constraint colocation add clusterfs-clone with lvmlockd-clone
-#  ansible.builtin.command: "pcs constraint colocation add {{ item.name }}-clone with lvmlockd-clone"
-#  with_items: 
-#    - { name: 'fileio_cluster_fs' }
-#    - { name: 'block_cluster_fs' }
-
-
 # pcs resource create name_cluster ocf:heartbeat:LVM-activate vgname=cluster_vg activation_mode=exclusive vg_access_mode=system_id --group HA-LVM
 - name: create LVM-activate resource
-# ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:LVM-activate vgname={{ item.vg }} activation_mode=exclusive vg_access_mode=system_id --group {{ item.group }}"
-  ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:LVM-activate lvname={{ item.lv }} vgname={{ item.vg }} activation_mode=shared vg_access_mode=lvmlockd op monitor interval=10s on-fail=ignore clone interleave=true ordered=true"
-# ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:LVM-activate lvname={{ item.lv }} vgname={{ item.vg }} activation_mode=shared vg_access_mode=lvmlockd --group {{ item.group }}"
+  ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:LVM-activate lvname={{ item.lv }} vgname={{ item.vg }} activation_mode=shared vg_access_mode=lvmlockd op monitor interval=30s on-fail=ignore clone interleave=true ordered=true"
   with_items: 
-    - { name: 'fileio_cluster_vg', lv: 'file0_cluster_lv', vg: 'fileio_cluster_vg' } #, group: 'shared_vg_file0' }
-    #- { name: 'block_cluster_vg', lv: 'block0_cluster_lv', vg: 'block_cluster_vg' } #, group: 'shared_vg_block0' }
+    - { name: 'fileio_cluster_vg', lv: 'file0_cluster_lv', vg: 'fileio_cluster_vg' }
+    - { name: 'block_cluster_vg', lv: 'block0_cluster_lv', vg: 'block_cluster_vg' }
+    - { name: 'ramdisk_cluster_vg', lv: 'ram0_cluster_lv', vg: 'ramdisk_cluster_vg' }
 
-- name: Wait a little
-  pause:
-    seconds: 10
-
-## pcs resource clone shared_vg interleave=true ----------------
-#- name: create clone of [LVM-activate]
-#  ansible.builtin.command: "pcs resource clone {{ item.group }} interleave=true"
-#  with_items: 
-#    - { group: 'fileio_cluster_vg' }
-#    - { group: 'block_cluster_vg' }
-
-# pcs constraint order start locking-clone then shared_vg-clone ------------
+# pcs constraint order start locking-clone then shared_vg-clone
 - name: set start order as [locking] → [shared_vg]
-  #ansible.builtin.command: "pcs constraint order start locking-clone then {{ item.group }}-clone"
   ansible.builtin.command: "pcs constraint order start lvmlockd-clone then {{ item.name }}-clone"
   with_items: 
     - { name: 'fileio_cluster_vg' }
-    #- { name: 'block_cluster_vg' }
+    - { name: 'block_cluster_vg' }
+    - { name: 'ramdisk_cluster_vg' }
 
-- name: Wait a little
-  pause:
-    seconds: 10
-
-# pcs constraint colocation add shared_vg-clone with locking-clone ----------
+# pcs constraint colocation add shared_vg-clone with locking-clone
 - name: set that [shared_vg] and [locking] start on a same node
-  #ansible.builtin.command: "pcs constraint colocation add {{ item.group }}-clone with locking-clone"
   ansible.builtin.command: "pcs constraint colocation add {{ item.name }}-clone with lvmlockd-clone"
   with_items: 
     - { name: 'fileio_cluster_vg' }
-    #- { name: 'block_cluster_vg' }
-
-- name: Wait a little
-  pause:
-    seconds: 10
+    - { name: 'block_cluster_vg' }
+    - { name: 'ramdisk_cluster_vg' }
 
 # pcs resource create shared_fs ocf:heartbeat:Filesystem device='/dev/vg_gfs2/lv_gfs2' directory='/home/gfs2-share' fstype='gfs2' options=noatime op monitor interval=10s on-fail=fence --group shared_vg
-- name: create Filesystem resource -------------
-  #ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:Filesystem device={{ item.device }} directory={{ item.mnt }} fstype=gfs2 'options=noatime' op monitor interval=10s on-fail=ignore clone interleave=true"
-  ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:Filesystem device={{ item.device }} directory={{ item.mnt }} fstype=gfs2 options=noatime op monitor interval=10s on-fail=ignore clone interleave=true"
-  #ansible.builtin.command: "pcs resource create {{ item.name }} --group {{ item.group }} ocf:heartbeat:Filesystem device='{{ item.device }}' directory='{{ item.mnt }}' fstype='gfs2' options=noatime op monitor interval=10s on-fail=ignore"
+- name: create Filesystem resource
+  ansible.builtin.command: "pcs resource create {{ item.name }} ocf:heartbeat:Filesystem device={{ item.device }} directory={{ item.mnt }} fstype=gfs2 options=noatime op monitor interval=20s on-fail=ignore clone interleave=true"
   with_items: 
-    - { name: 'fileio_cluster_fs', device: '/dev/fileio_cluster_vg/file0_cluster_lv', mnt: '/mnt/lvm_cluster_file0' } #, group: 'fileio_cluster_vg'
-    #- { name: 'block_cluster_fs', device: '/dev/block_cluster_vg/block0_cluster_lv', mnt: '/mnt/lvm_cluster_block0' } #, group: 'block_cluster_vg'
+    - { name: 'fileio_cluster_fs', device: '/dev/fileio_cluster_vg/file0_cluster_lv', mnt: '/mnt/lvm_cluster_file0' }
+    - { name: 'block_cluster_fs', device: '/dev/block_cluster_vg/block0_cluster_lv', mnt: '/mnt/lvm_cluster_block0' }
+    #- { name: 'ramdisk_cluster_fs', device: '/dev/ramdisk_cluster_vg/ram0_cluster_lv', mnt: '/mnt/lvm_cluster_ram0' }
