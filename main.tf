@@ -93,6 +93,7 @@ resource "local_file" "group_vars_all_file" {
     {
       iscsi-servers = data.yandex_compute_instance.iscsi-servers
       pcs-servers   = data.yandex_compute_instance.pcs-servers
+      subnet_cidrs  = local.subnet_cidrs
     }
   )
   filename = "${path.module}/group_vars/all/main.yml"

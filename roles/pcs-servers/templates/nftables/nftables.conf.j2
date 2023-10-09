@@ -3,12 +3,25 @@
 flush ruleset
 
 table ip filter {
-
-        chain NGINX_INP {
-                tcp dport 80 ct state new counter accept
+        
+        chain PCSD_INP {
+                tcp dport 2224 ct state new counter accept
         }
-        chain PHP_FPM_INP {
-                tcp dport 9000 ct state new counter accept
+        chain PACEMAKER_REMOTED_INP {
+                tcp dport 3121 ct state new counter accept
+        }
+        chain COROSYNC_QNETD_INP {
+                tcp dport 5403 ct state new counter accept
+        }
+        chain COROSYNC_INP {
+                udp dport { 5404-5412 } ct state new counter accept
+        }
+        chain DLM_INP {
+                tcp dport 21064 ct state new counter accept
+        }
+        chain MULTI_SITE_CLUSTER_INP {
+                tcp dport 9929 ct state new counter accept
+                udp dport 9929 ct state new counter accept
         }
         chain INPUT {
                 type filter hook input priority filter; policy drop;
@@ -16,10 +29,14 @@ table ip filter {
                 iifname "lo" counter accept
                 tcp dport 22 ct state new counter accept
                 udp dport 323 counter accept
-                ip saddr 0.0.0.0/0 icmp type echo-request counter accept
+                ip saddr {{ subnet_cidrs }} icmp type echo-request counter accept
                 ct state established,related counter accept
-                counter jump NGINX_INP
-                #counter jump PHP_FPM_INP
+                counter jump PCSD_INP
+                counter jump PACEMAKER_REMOTED_INP
+                counter jump COROSYNC_QNETD_INP
+                counter jump COROSYNC_INP
+                counter jump DLM_INP
+                counter jump MULTI_SITE_CLUSTER_INP
         }
 
         chain FORWARD {

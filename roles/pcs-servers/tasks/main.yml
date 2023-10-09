@@ -1,6 +1,6 @@
 ---
-#- name: Include nftables service
-#  include_tasks: nftables.yml
+- name: Include nftables service
+  include_tasks: nftables.yml
 
 - name: Include install_packages
   include_tasks: install_packages.yml

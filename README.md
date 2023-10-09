@@ -94,3 +94,10 @@ pcs resource create fileio_cluster_fs ocf:heartbeat:Filesystem device=/dev/filei
 
 pcs resource create block_cluster_fs ocf:heartbeat:Filesystem device=/dev/block_cluster_vg/block0_cluster_lv directory=/mnt/lvm_cluster_block0 fstype=gfs2 options=noatime op monitor interval=10s on-fail=ignore clone interleave=true
 
+pcs constraint order start fileio_cluster_vg-clone then fileio_cluster_fs-clone
+
+pcs constraint order start block_cluster_vg-clone then block_cluster_fs-clone
+
+pcs constraint colocation add fileio_cluster_fs-clone with fileio_cluster_vg-clone
+
+pcs constraint colocation add block_cluster_fs-clone with block_cluster_vg-clone

@@ -30,3 +30,19 @@
     - { name: 'fileio_cluster_fs', device: '/dev/fileio_cluster_vg/file0_cluster_lv', mnt: '/mnt/lvm_cluster_file0' }
     - { name: 'block_cluster_fs', device: '/dev/block_cluster_vg/block0_cluster_lv', mnt: '/mnt/lvm_cluster_block0' }
     #- { name: 'ramdisk_cluster_fs', device: '/dev/ramdisk_cluster_vg/ram0_cluster_lv', mnt: '/mnt/lvm_cluster_ram0' }
+
+# pcs constraint order start shared_vg-clone then shared_fs-clone
+- name: set start order as [shared_vg] → [shared_fs]
+  ansible.builtin.command: "pcs constraint order start {{ item.vg }}-clone then {{ item.fs }}-clone"
+  with_items:
+    - { vg: 'fileio_cluster_vg', fs: 'fileio_cluster_fs' }
+    - { vg: 'block_cluster_vg', fs: 'block_cluster_fs' }
+    #- { vg: 'ramdisk_cluster_vg', fs: 'ramdisk_cluster_fs' }
+
+# pcs constraint colocation add shared_fs-clone with shared_vg-clone
+- name: set that [shared_fs] and [shared_vg] start on a same node
+  ansible.builtin.command: "pcs constraint colocation add {{ item.fs }}-clone with {{ item.vg }}-clone"
+  with_items:
+    - { vg: 'fileio_cluster_vg', fs: 'fileio_cluster_fs' }
+    - { vg: 'block_cluster_vg', fs: 'block_cluster_fs' }
+    #- { vg: 'ramdisk_cluster_vg', fs: 'ramdisk_cluster_fs' }

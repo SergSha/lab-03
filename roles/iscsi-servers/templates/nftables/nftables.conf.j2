@@ -13,7 +13,7 @@ table ip filter {
                 iifname "lo" counter accept
                 tcp dport 22 ct state new counter accept
                 udp dport 323 counter accept
-                ip saddr 0.0.0.0/0 icmp type echo-request counter accept
+                ip saddr {{ subnet_cidrs }} icmp type echo-request counter accept
                 ct state established,related counter accept
                 counter jump ISCSI_INP
         }
