@@ -48,10 +48,14 @@ https://github.com/SergSha/lab-03.git
 <img src="pics/infra.png" alt="infra.png" />
 
 Чтобы развернуть стенд, нужно выполнить следующие команды:
-```git clone https://github.com/SergSha/lab-03.git && \
-cd ./lab-03 && terraform init && terraform apply -auto-approve```
+```
+git clone https://github.com/SergSha/lab-03.git && \
+cd ./lab-03 && terraform init && terraform apply -auto-approve
+```
 подождав 30 секунд, запустить следующую команду:
-```ansible-playbook ./provision.yml```
+```
+ansible-playbook ./provision.yml
+```
 
 На всех серверах будут установлены ОС Almalinux 8, настроены смнхронизация времени Chrony, в качестве firewall будет использоваться NFTables.
 
