@@ -44,7 +44,78 @@ https://github.com/SergSha/lab-03.git
 ```
 
 Схема:
+
 <img src="pics/infra.png" alt="infra.png" />
+
+Чтобы развернуть стенд, нужно выполнить следующие команды:
+```git clone https://github.com/SergSha/lab-03.git && \
+cd ./lab-03 && terraform init && terraform apply -auto-approve```
+подождав 30 секунд, запустить следующую команду:
+```ansible-playbook ./provision.yml```
+
+На всех серверах будут установлены ОС Almalinux 8, настроены смнхронизация времени Chrony, в качестве firewall будет использоваться NFTables.
+
+Сервер iscsi-01 будет служить iSCSI таргетом. В нём будут настроены три типа таргета:
+  - fileio,
+  - block,
+  - ramdisk.
+
+В качестве fileio таргета будет файл /var/iSCSI/file0.IMG размером 1 ГБ.
+
+Для block таргета - отдельно созданный диск /dev/vdb размером 1 ГБ.
+
+А для ramdisk таргета выделим 1 ГБ оперативной памяти, которые могут использоваться другим сервером в качестве swap.
+
+```[root@iscsi-01 ~]# targetcli ls
+o- / ..................................................................... [...]
+  o- backstores .......................................................... [...]
+  | o- block .............................................. [Storage Objects: 1]
+  | | o- block0 ....................... [/dev/vdb (1.0GiB) write-thru activated]
+  | |   o- alua ............................................... [ALUA Groups: 1]
+  | |     o- default_tg_pt_gp ................... [ALUA state: Active/optimized]
+  | o- fileio ............................................. [Storage Objects: 1]
+  | | o- file0 ............ [/var/iSCSI/file0.IMG (1.0GiB) write-back activated]
+  | |   o- alua ............................................... [ALUA Groups: 1]
+  | |     o- default_tg_pt_gp ................... [ALUA state: Active/optimized]
+  | o- pscsi .............................................. [Storage Objects: 0]
+  | o- ramdisk ............................................ [Storage Objects: 1]
+  |   o- ram0 ............................................. [(1.0GiB) activated]
+  |     o- alua ............................................... [ALUA Groups: 1]
+  |       o- default_tg_pt_gp ................... [ALUA state: Active/optimized]
+  o- iscsi ........................................................ [Targets: 1]
+  | o- iqn.2023-09.local.otus:storage.target00 ....................... [TPGs: 1]
+  |   o- tpg1 ........................................... [no-gen-acls, no-auth]
+  |     o- acls ...................................................... [ACLs: 3]
+  |     | o- iqn.2023-09.local.sergsha:pcs-01 ................. [Mapped LUNs: 3]
+  |     | | o- mapped_lun0 ............................ [lun0 fileio/file0 (rw)]
+  |     | | o- mapped_lun1 ............................ [lun1 block/block0 (rw)]
+  |     | | o- mapped_lun2 ............................ [lun2 ramdisk/ram0 (rw)]
+  |     | o- iqn.2023-09.local.sergsha:pcs-02 ................. [Mapped LUNs: 3]
+  |     | | o- mapped_lun0 ............................ [lun0 fileio/file0 (rw)]
+  |     | | o- mapped_lun1 ............................ [lun1 block/block0 (rw)]
+  |     | | o- mapped_lun2 ............................ [lun2 ramdisk/ram0 (rw)]
+  |     | o- iqn.2023-09.local.sergsha:pcs-03 ................. [Mapped LUNs: 3]
+  |     |   o- mapped_lun0 ............................ [lun0 fileio/file0 (rw)]
+  |     |   o- mapped_lun1 ............................ [lun1 block/block0 (rw)]
+  |     |   o- mapped_lun2 ............................ [lun2 ramdisk/ram0 (rw)]
+  |     o- luns ...................................................... [LUNs: 3]
+  |     | o- lun0 ..... [fileio/file0 (/var/iSCSI/file0.IMG) (default_tg_pt_gp)]
+  |     | o- lun1 ................. [block/block0 (/dev/vdb) (default_tg_pt_gp)]
+  |     | o- lun2 ............................ [ramdisk/ram0 (default_tg_pt_gp)]
+  |     o- portals ................................................ [Portals: 1]
+  |       o- 0.0.0.0:3260 ................................................. [OK]
+  o- loopback ..................................................... [Targets: 0]
+[root@iscsi-01 ~]# ```
+
+Для каждого таргета настроены свои LUNы, для каждого сервера настроены свои ACL доступы.
+
+
+
+
+
+
+
+
 
 
 
