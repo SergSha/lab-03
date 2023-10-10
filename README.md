@@ -34,19 +34,27 @@ export YC_TOKEN=$(yc iam create-token)
 export TF_VAR_yc_token=$YC_TOKEN
 ```
 
-Создадим директорий lab-01 и перейдём в него:
+Создадим директорий lab-03 и перейдём в него:
 ```
-mkdir ./lab-02 && cd ./lab-02/
+mkdir ./lab-03 && cd ./lab-03/
 ```
 Создадим необходимые файлы. Размещены в репозитории GitHub по ссылке:
 ```
-https://github.com/SergSha/lab-02.git
+https://github.com/SergSha/lab-03.git
 ```
 
 Схема:
 <img src="pics/infra.png" alt="infra.png" />
 
-```https://www.golinuxcloud.com/setup-high-availability-cluster-centos-8/```
+
+
+
+
+
+
+
+
+
 
 
 pcs host auth pcs-01.mydomain.test pcs-02.mydomain.test pcs-03.mydomain.test -u hacluster -p strong_pass
