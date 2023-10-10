@@ -1,7 +1,7 @@
 locals {
   vm_user         = "cloud-user"
-  ssh_public_key  = "~/.ssh/otus.pub"
-  ssh_private_key = "~/.ssh/otus"
+  ssh_public_key  = "~/.ssh/id_rsa.pub"
+  ssh_private_key = "~/.ssh/id_rsa"
   #vm_name = "instance"
   vpc_name = "my_vpc_network"
   subnet_cidrs = ["10.10.20.0/24"]
